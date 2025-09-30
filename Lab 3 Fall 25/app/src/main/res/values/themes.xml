@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Lab3" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+         <item name="colorPrimary">@color/spotify_green</item>
+        <item name="colorSecondary">@color/spotify_black_dark</item>
+        <item name="colorSecondaryVariant">@color/spotify_black_light</item>
+    </style>
+
+    <style name="Theme.Lab3" parent="Base.Theme.Lab3" />
+</resources>
