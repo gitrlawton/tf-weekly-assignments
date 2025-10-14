@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">RedButton</string>
+
+    <!-- Text -->
+    <string name="header_title_text">DO NOT tap\nthe <font color="#FF2800">red</font> button</string>
+    <string name="header_description_text">It doesn\'t do anything interesting…</string>
+    <string name="congrats_title_text">Congratulations! You did it!\nWhat I explicitly told you <font color="#FF2800"><b>NOT</b></font> to do!</string>
+    <string name="congrats_title_description">Tap the trophy to keep the celebration going</string>
+    <string name="made_with_love_text">Made with %s by driuft</string>
+
+    <!-- Content descriptions -->
+    <string name="red_button_description">A simple, round, red button. Something is telling me to press it…</string>
+    <string name="red_button_smile_description">A smile coming from the red button.</string>
+    <string name="other_button_description">Not a red button. Maybe you should get rid of it…</string>
+    <string name="other_tiny_button_description">Just a tiny button. Maybe you should try pressing and holding it…</string>
+
+    <!-- Toast messages -->
+    <string name="toast_wrong_button_error">Sike! I\'m not really RED.\nIf you\'re looking for the <font color="#FF2800">RED</font> button, check activity_main.xml</string>
+    <string name="toast_unclickable_warning">Maybe there is a View preventing my taps in activity_main.xml</string>
+    <string name="toast_do_not_press_and_hold">You should totally <b>not</b> PRESS AND HOLD or increase the size for easier visibility</string>
+    <string name="toast_congrats">CONGRATULATIONS! %s</string>
+
+    <!-- Preferences -->
+    <string name="red_button_shown_key">Red button has been shown</string>
+    <string name="blue_button_shown_key">Blue button has been shown</string>
+</resources>
