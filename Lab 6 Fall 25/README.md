@@ -1,32 +1,34 @@
-## Lab #5: Random Pets 🐶🐱
+## Lab #6: Random Pets 🐶🐱
 
 Submitted by: **Ryan Lawton**
 
 ### Overview
 
-In this lab, you will build an app that shows random pet images from an API when the user taps a button. The main purpose of this lab is to understand how to call an API to receive data and use the data in your app.
+In this lab, you'll be able to scroll through endless photos of furry friends in a sleek and interactive RecyclerView.
 
-The basic version of the app will allow the user to tap a button to display a random dog image retrieved from an API. Stretch features use images from two APIs and randomly chooses either a dog or a cat to display.
+The basic version of this app will make a request to a pet API and display random images from the request in a vertical list using a RecyclerView.
 
 ## Application Features
 
 #### Required Features:
 
-- [x] Obtain a random dog image from an API
-- [x] Display a random dog image when the user taps a button
+- [x] Setting up a RecyclerView
+- [x] Loading a list of dummy data into an Adapter
+- [x] Building a UI and displaying data in the ViewHolder
+- [x] Using our API data in the Adapter
 
 #### Stretch Features:
 
-- [x] Obtain a random cat image from an additional API
-- [x] Display a random dog or cat image when the user taps a button
+- [] Add item dividers with DividerItemDecoration
+- [] Add a Toast or Snackbar for when an item is clicked
 
 ## Video Demo
 
 Here's a video / GIF that demos all of the app's implemented features:
 
-![Demo](https://i.imgur.com/aoKzlaR.gif)
+![Demo](https://i.imgur.com/NEkbUa1.gif)
 
-🔗 [Can't see the GIF? Click here to view it directly on Imgur](https://i.imgur.com/aoKzlaR.gif)
+🔗 [Can't see the GIF? Click here to view it directly on Imgur](https://i.imgur.com/NEkbUa1.gif)
 
 GIF created with **EZGif**
 
