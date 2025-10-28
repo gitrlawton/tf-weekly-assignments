@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
@@ -31,6 +32,11 @@ class PetAdapter (private val petList: List<String>) : RecyclerView.Adapter<PetA
             .load(petList[position])
             .centerCrop()
             .into(holder.petImage)
+
+        // `holder` can used to reference any View within the RecyclerView item's layout file
+        holder.petImage.setOnClickListener {
+            Toast.makeText(holder.itemView.context, "Doggo at position $position clicked", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun getItemCount() = petList.size

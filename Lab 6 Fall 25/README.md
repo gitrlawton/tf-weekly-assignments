@@ -19,16 +19,16 @@ The basic version of this app will make a request to a pet API and display rando
 
 #### Stretch Features:
 
-- [] Add item dividers with DividerItemDecoration
-- [] Add a Toast or Snackbar for when an item is clicked
+- [x] Add item dividers with DividerItemDecoration
+- [x] Add a Toast or Snackbar for when an item is clicked
 
 ## Video Demo
 
 Here's a video / GIF that demos all of the app's implemented features:
 
-![Demo](https://i.imgur.com/NEkbUa1.gif)
+![Demo](https://i.imgur.com/kjz70cS.gif)
 
-🔗 [Can't see the GIF? Click here to view it directly on Imgur](https://i.imgur.com/NEkbUa1.gif)
+🔗 [Can't see the GIF? Click here to view it directly on Imgur](https://i.imgur.com/kjz70cS.gif)
 
 GIF created with **EZGif**
 
