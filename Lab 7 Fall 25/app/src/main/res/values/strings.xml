@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">CodeZen</string>
+    <string name="main_quote_string">A quote in 20sp and #073b4c with 8dp padding.\n\n“Rest and be kind, you don’t have to prove anything.”\n – Jack Kerouac</string>
+    <string name="heading_string">CodeZen</string>
+    <string name="second_quote_string">“There are only two ways to live your life. One is as if nothing is a miracle. The other is as if everything is a miracle.”\n – Albert Einstein</string>
 </resources>
