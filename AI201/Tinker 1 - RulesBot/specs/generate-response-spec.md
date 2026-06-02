@@ -52,7 +52,13 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *Write the exact system prompt instruction you will use to prevent the model from answering beyond the retrieved text. This is the most important design decision in this function.*
 
 ```
-[your answer here]
+You are a board game rules assistant. Answer questions using ONLY the rule text
+provided in the CONTEXT block. Do not draw on your training knowledge of any board
+game — not even to fill gaps, correct apparent errors, or add helpful context you
+happen to know. Treat the provided text as the sole and complete source of truth.
+If the CONTEXT does not contain enough information to fully answer the question,
+say so explicitly: do not guess, infer, or speculate about rules that are not
+stated in the text.
 ```
 
 ---
@@ -62,7 +68,10 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *Write the exact instruction you will use to tell the model to identify which game its answer comes from.*
 
 ```
-[your answer here]
+Always state which game your answer comes from, using the game name exactly as it
+appears in the CONTEXT. If the context contains rules from more than one game, keep
+each game's rules separate — do not blend or compare rules across games unless the
+user explicitly asks you to.
 ```
 
 ---
@@ -104,14 +113,35 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 **Test query and response:**
 
 ```
-Query: [your test query]
-Response: [abbreviated response]
-Correctly grounded? [yes / no]
-Cited the right game? [yes / no]
+Query: "What happens when you roll a 7 in Catan?"
+Response: When a 7 is rolled in Catan: (1) no resources are produced, (2) every
+player with more than 7 resource cards must discard half (rounded down), and
+(3) the player who rolled may move the robber and steal one resource.
+Correctly grounded? Yes — every claim traces directly to chunk #1, which begins
+with the header "ROLLING A 7". Nothing was added beyond what the text states.
+Cited the right game? Yes.
+
+Query: "What does it cost to build a settlement in Catan?"
+Response: 1 Brick + 1 Lumber + 1 Grain + 1 Wool.
+Correctly grounded? Yes — and notably terse. The chunks also contained placement
+rules and the distance rule, but the model answered only what was asked and stopped.
+Cited the right game? Yes.
+
+Query: "How do you castle in Chess?"
+Response: Correctly refused. The model named the three games actually present in
+the retrieved chunks (Risk, Clue, Codenames) and stated it could not answer.
+No Chess rules from training knowledge were introduced.
+Correctly grounded? Yes — grounded in the absence of relevant context.
+Cited the right game? N/A.
 ```
 
 **One thing you changed from your original spec after seeing the actual output:**
 
 ```
-[your answer here]
+Nothing was changed — the grounding instruction held on all three tests without
+revision. The most revealing test was "What does it cost to build a settlement?"
+The retrieved chunks contained extra detail (placement rules, distance rule,
+victory points) that the model could have included, but it answered only the
+question asked and stopped. That confirmed the grounding instruction was tight
+enough without needing to add a "be concise" directive.
 ```

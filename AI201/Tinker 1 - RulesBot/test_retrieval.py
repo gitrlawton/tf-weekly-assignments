@@ -59,3 +59,6 @@ run_query("specific", "What happens when you roll a 7?")
 
 # ── Test 2: cross-game concept ────────────────────────────────────────────────
 run_query("cross-game", "How do you win?")
+
+# ── Test 3: game-specific, resource depletion ─────────────────────────────────
+run_query("pandemic-specific", "What happens when you run out of disease cubes in Pandemic?")
