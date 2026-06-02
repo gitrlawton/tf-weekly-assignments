@@ -125,14 +125,30 @@ _Fill this in after implementing, before moving to Milestone 3._
 **Test query and top result returned:**
 
 ```
-Query: [your test query]
-Top result game: [game name]
-Distance score: [score]
-Does it make sense? [yes / no / explain]
+Query: "What happens when you roll a 7?"
+Top result game: Catan
+Distance score: 0.466
+Does it make sense? Yes — the top chunk begins with the header "ROLLING A 7" and
+describes exactly the rule the query asks about. It was the only result below the
+0.5 threshold; results 2–5 were all noise from other games (Risk, Uno, Monopoly)
+with distances in the 0.60–0.63 range.
+
+Query: "How do you win?"
+Top result game: Monopoly
+Distance score: 0.507
+Does it make sense? Yes — the top chunk contains a "WINNING" section describing
+elimination-based victory. More notably, all 5 results came from 5 different games
+(Monopoly, Risk, Ticket to Ride, Uno, Catan), which is the correct behavior for a
+concept that exists across every game in the collection. However, every result was
+above 0.5, meaning a strict 0.5 threshold would return no context at all for this
+query despite the results being genuinely relevant.
 ```
 
 **One thing about the query results that surprised you:**
 
 ```
-[your answer here]
+Even the correct, on-topic Catan chunk for "roll a 7" only scored 0.466 — the
+right answer came back first, but its distance was uncomfortably close to the 0.5
+cutoff. A slightly noisier document or a slightly different phrasing could have
+pushed it above the threshold entirely.
 ```
