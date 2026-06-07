@@ -1,5 +1,5 @@
 import json
-from groq import Groq
+from groq import Groq, BadRequestError
 from config import GROQ_API_KEY, LLM_MODEL, MAX_TOOL_ROUNDS
 from tools import lookup_plant, get_seasonal_conditions
 
@@ -142,12 +142,15 @@ def run_agent(user_message: str, history: list) -> str:
     messages.append({"role": "user", "content": user_message})
 
     for _ in range(MAX_TOOL_ROUNDS):
-        response = _client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=messages,
-            tools=TOOL_DEFINITIONS,
-            tool_choice="auto",
-        )
+        try:
+            response = _client.chat.completions.create(
+                model=LLM_MODEL,
+                messages=messages,
+                tools=TOOL_DEFINITIONS,
+                tool_choice="auto",
+            )
+        except BadRequestError:
+            return "I had trouble processing that request — please try asking again."
         assistant_message = response.choices[0].message
 
         if not assistant_message.tool_calls:

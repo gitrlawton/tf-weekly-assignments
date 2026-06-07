@@ -176,7 +176,15 @@ seasonal_notes field (not a get_seasonal_conditions call).
 **What happens when you ask about a plant that isn't in the database?**
 
 ```
-[describe the behavior you observed]
+lookup_plant returns {"found": false, "message": "No plant matching 'string of
+pearls' was found in the database. Known plants: pothos, snake_plant, ..."}
+
+The LLM reads the known-plants list, confirms it's not a near-miss spelling error,
+and falls back to its own knowledge — offering general succulent care guidance while
+clearly flagging that the advice didn't come from the database. This matches the
+system prompt instruction to say so clearly and offer general guidance. The
+not-found message did its job: the plant list let the LLM distinguish "not in DB"
+from "maybe a typo."
 ```
 
 **One thing about the tool call API that surprised you:**
