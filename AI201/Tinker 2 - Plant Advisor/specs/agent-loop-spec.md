@@ -122,7 +122,21 @@ for tool_call in assistant_message.tool_calls:
 *The loop should stop when: (a) the LLM returns a response with no tool calls, OR (b) the MAX_TOOL_ROUNDS limit is reached. Describe how you will detect each condition and what you will return in each case.*
 
 ```
-[your answer here]
+(a) No tool calls — detected by `not assistant_message.tool_calls` being truthy.
+Return `assistant_message.content or <fallback string>`. The `or` guard is necessary
+because `.content` can be None even when there are no tool_calls; without it the
+function would return None instead of a str, breaking the Gradio contract.
+
+(b) MAX_TOOL_ROUNDS reached — the for-loop exhausts without ever hitting the early
+return. After the loop, return a user-readable fallback string such as:
+"I wasn't able to complete my research in time. Please try again."
+Do not attempt to read `.content` here — the last response had tool_calls (that's
+why the loop didn't exit early), so its content is likely None.
+
+Edge cases ruled out:
+- Infinite loop: impossible — the loop is bounded by range(MAX_TOOL_ROUNDS).
+- Silent exception swallowing: dispatch_tool errors are allowed to propagate so
+  failures surface rather than being hidden behind a fallback message.
 ```
 
 ---
@@ -132,7 +146,14 @@ for tool_call in assistant_message.tool_calls:
 *Once the loop exits because there are no more tool calls, how do you extract the text content from the response object? What field holds the string you should return?*
 
 ```
-[your answer here]
+response.choices[0].message.content
+
+- response.choices  — list of completion choices; index 0 is the assistant turn
+- .message          — the ChatCompletionMessage object
+- .content          — the text string the LLM produced
+
+Return this with an `or` fallback:
+    return assistant_message.content or "I'm sorry, I wasn't able to generate a response."
 ```
 
 ---
@@ -145,9 +166,11 @@ for tool_call in assistant_message.tool_calls:
 
 ```
 Query: "How should I care for my calathea?"
-Round 1 tool call: [tool name, args]
-Round 2 tool call: [tool name, args] (if any)
-Final response: [brief description]
+Round 1 tool call: lookup_plant({'plant_name': 'calathea'}) → found: true
+Round 2 tool call: none — LLM returned a text response after one tool call
+Final response: watering, light, humidity, temperature, and fertilizing advice
+drawn from the calathea care data, plus per-season notes from the plant's
+seasonal_notes field (not a get_seasonal_conditions call).
 ```
 
 **What happens when you ask about a plant that isn't in the database?**
@@ -159,5 +182,14 @@ Final response: [brief description]
 **One thing about the tool call API that surprised you:**
 
 ```
-[your answer here]
+The LLM doesn't always call all available tools — it decides based on what it
+already has. For the calathea question it called lookup_plant once, found per-season
+notes inside the plant record itself, and returned a full response without ever
+calling get_seasonal_conditions. The tools are options, not a required pipeline.
+
+Also surprising: Groq occasionally returns a 400 error (tool_use_failed) when the
+llama-3.3-70b model generates syntactically malformed tool call markup in multi-turn
+conversations. This is a model-level bug, not an API misuse — retrying the same
+request usually succeeds. It shows that tool call failures can come from the model
+itself, not just from bad tool results, and the agent loop needs to handle both.
 ```
