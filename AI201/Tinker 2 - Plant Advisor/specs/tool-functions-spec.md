@@ -70,7 +70,13 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *Aliases are stored as a list of strings. How will you check if the normalized input matches any alias in the list? Write your approach in pseudocode or plain English.*
 
 ```
-[your answer here]
+For each plant in _plant_db.values(), lowercase every string in plant["aliases"]
+and check whether normalized is in that list. Return the plant on the first match.
+
+For thousands of plants, build an inverted index dict at module load time:
+{alias.lower(): plant_key for each alias of each plant}. Then alias lookup is O(1)
+instead of O(n×m). At 15 plants a linear scan is fine, but the index is the right
+pattern for production scale.
 ```
 
 ---
@@ -80,7 +86,13 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 *When a plant isn't found, the agent will read your message and use it to decide what to tell the user. Write the exact string you'll return — make it useful to the agent, not just to a human reading logs.*
 
 ```
-[your answer here]
+f"No plant matching '{normalized}' was found in the database. Known plants: "
+f"{', '.join(_plant_db.keys())}. Ask the user to check the spelling or try a "
+f"common name, scientific name, or alias."
+
+Rationale: including the full list of known plant keys lets the LLM recognize
+near-misses and suggest corrections itself (e.g. "philodendran" → "philodendron"),
+rather than just telling the user "I don't know that plant."
 ```
 
 ---
@@ -91,17 +103,19 @@ likely match for clean user input. Aliases are the broadest net, so they go last
 
 **Test: does `"devil's ivy"` return the pothos entry?**
 ```
-[yes / no — if no, describe what happened]
+yes
 ```
 
 **Test: does `"SNAKE PLANT"` return the snake plant entry?**
 ```
-[yes / no — if no, describe what happened]
+yes
 ```
 
 **One edge case you discovered while implementing:**
 ```
-[your answer here]
+Scientific names are not searched. Typing "Epipremnum aureum" returns not-found
+even though pothos is in the database. The search covers keys, display_name, and
+aliases — but scientific_name is a separate field that is never checked.
 ```
 
 ---
