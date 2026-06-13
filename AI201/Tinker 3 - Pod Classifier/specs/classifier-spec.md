@@ -11,21 +11,22 @@ your answers here become the blueprint for `build_few_shot_prompt()` and
 ## build_few_shot_prompt(labeled_examples, description)
 
 ### What it does
+
 Constructs a prompt string for the LLM that includes the task instructions,
 all labeled training examples, and the new episode description to classify.
 
 ### Inputs
 
-| Parameter | Type | Description |
-|---|---|---|
+| Parameter          | Type         | Description                                                                                                          |
+| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------- |
 | `labeled_examples` | `list[dict]` | Each dict has `"title"`, `"description"`, `"label"` (and others). These are the examples you labeled in Milestone 1. |
-| `description` | `str` | The episode description to classify. |
+| `description`      | `str`        | The episode description to classify.                                                                                 |
 
 ### Output
 
-| Return value | Type | Description |
-|---|---|---|
-| prompt | `str` | A complete prompt string ready to send to the LLM. |
+| Return value | Type  | Description                                        |
+| ------------ | ----- | -------------------------------------------------- |
+| prompt       | `str` | A complete prompt string ready to send to the LLM. |
 
 ---
 
@@ -90,7 +91,7 @@ the format below:" followed by the output format you chose.
 
 **What output format should you request from the LLM?**
 
-```
+````
 Request this two-line format:
 
   Label: {one of: interview, solo, panel, narrative}
@@ -109,7 +110,7 @@ Parsing in classify_episode(): split response on newlines; find the line
 starting with "Label: ", strip and lowercase the value, validate against
 VALID_LABELS; find the line starting with "Reasoning: " and take everything
 after the prefix.
-```
+````
 
 ---
 
@@ -131,21 +132,22 @@ after the prefix.
 ## classify_episode(description, labeled_examples)
 
 ### What it does
+
 Classifies a single podcast episode description using the few-shot LLM classifier.
 Returns a dict with a label and reasoning.
 
 ### Inputs
 
-| Parameter | Type | Description |
-|---|---|---|
-| `description` | `str` | The episode description to classify. |
+| Parameter          | Type         | Description                                               |
+| ------------------ | ------------ | --------------------------------------------------------- |
+| `description`      | `str`        | The episode description to classify.                      |
 | `labeled_examples` | `list[dict]` | Labeled training examples from `load_labeled_examples()`. |
 
 ### Output
 
-| Return value | Type | Description |
-|---|---|---|
-| result | `dict` | Must have keys `"label"` and `"reasoning"`. `"label"` must be one of `VALID_LABELS` or `"unknown"`. |
+| Return value | Type   | Description                                                                                         |
+| ------------ | ------ | --------------------------------------------------------------------------------------------------- |
+| result       | `dict` | Must have keys `"label"` and `"reasoning"`. `"label"` must be one of `VALID_LABELS` or `"unknown"`. |
 
 ---
 
@@ -255,29 +257,43 @@ any labels you're unsure about. Annotation quality is part of the lab.
 
 ## Implementation Notes
 
-*Fill this in after implementing and testing both functions.*
+_Fill this in after implementing and testing both functions._
 
 **Test: what does the raw LLM response look like for one episode?**
 
 ```
-Episode tested: [title]
-Raw response text: [paste it here]
+Episode tested: "52 Weeks of Julia Child" (custom test — solo)
+
+Raw response text:
+  Label: solo
+  Reasoning: The episode features a single host speaking from their personal
+  experience and opinion, with no guests or external sources, as indicated by
+  phrases such as "This episode is my end-of-year debrief" and "Just me and
+  a lot of butter".
+
 ```
 
 **How did you parse the label out of the response?**
 
 ```
-[describe the string operations — strip, split, lower, etc.]
+response_text.strip().splitlines() splits the response into individual lines.
+A for loop checks each line with line.lower().startswith("label:") and
+line.lower().startswith("reasoning:"). For each match, line.split(":", 1)[1]
+isolates the value after the first colon, and .strip().lower() normalizes it.
+The split(":", 1) limit of 1 is important — it prevents splitting on colons
+that appear inside the reasoning text.
 ```
 
 **Did any episodes return `"unknown"`? If so, why?**
 
 ```
-[yes / no — if yes, what did the raw response look like?]
+No — not yet tested against the full evaluation set.
 ```
 
 **One thing about the output format that surprised you:**
 
 ```
-[your answer here]
+Gradio's async framework prints its own trace lines to the same terminal as
+print(response_text), so the raw output appeared prefixed with framework noise.
+The actual LLM response was clean and matched the requested format exactly.
 ```
