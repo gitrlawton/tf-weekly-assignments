@@ -91,10 +91,24 @@ the format below:" followed by the output format you chose.
 **What output format should you request from the LLM?**
 
 ```
-[blank — you need to parse the response in classify_episode(). What format
-makes parsing reliable? Think about: a single label on its own line?
-A structured format like "Label: X / Reasoning: Y"? JSON?
-What are the tradeoffs?]
+Request this two-line format:
+
+  Label: {one of: interview, solo, panel, narrative}
+  Reasoning: {one sentence explaining the key signal that determined the label}
+
+Tradeoffs:
+
+  | Option                        | Parsing                              | Reliability                                        |
+  |-------------------------------|--------------------------------------|----------------------------------------------------|
+  | Label: X / Reasoning: Y       | split on newlines, one op per field  | Very consistent — best fit                         |
+  | JSON {"label": X, ...}        | json.loads()                         | LLMs frequently wrap in ```json fences; fragile    |
+  | Label only                    | trivial                              | Reliable, but drops reasoning the contract requires|
+  | Free prose ending in a label  | regex                                | Brittle — label position varies                    |
+
+Parsing in classify_episode(): split response on newlines; find the line
+starting with "Label: ", strip and lowercase the value, validate against
+VALID_LABELS; find the line starting with "Reasoning: " and take everything
+after the prefix.
 ```
 
 ---
@@ -102,8 +116,14 @@ What are the tradeoffs?]
 **Edge cases to handle in the prompt:**
 
 ```
-[blank — what if labeled_examples is empty? What if the description is very
-short? How does your prompt handle these?]
+- labeled_examples is empty: the prompt still works — the task instruction and
+  taxonomy definitions give the LLM enough to classify from. The few-shot block
+  is simply omitted. Classification quality will be lower (zero-shot), but the
+  function should not error or behave differently.
+
+- description is very short (e.g., a single sentence or title only): pass it
+  through as-is. The LLM will have less signal and may be less confident, but
+  the prompt format is unchanged. Do not pad or modify the description.
 ```
 
 ---
@@ -159,9 +179,21 @@ Extract the response text from:
 **Step 3 — Parse the response:**
 
 ```
-[blank — how do you extract the label and reasoning from the LLM's text output?
-What string operations or parsing logic do you need?
-This depends on the output format you chose in build_few_shot_prompt.]
+Split the response text on newlines. Iterate the lines looking for one that
+starts with "Label: " (case-insensitive strip recommended). Take everything
+after the prefix, strip whitespace, and lowercase — that is the raw label.
+
+Do the same for "Reasoning: " to extract the reasoning string.
+
+Example:
+  lines = response_text.strip().splitlines()
+  label_raw = ""
+  reasoning = ""
+  for line in lines:
+      if line.lower().startswith("label:"):
+          label_raw = line.split(":", 1)[1].strip().lower()
+      elif line.lower().startswith("reasoning:"):
+          reasoning = line.split(":", 1)[1].strip()
 ```
 
 ---
@@ -169,8 +201,11 @@ This depends on the output format you chose in build_few_shot_prompt.]
 **Step 4 — Validate the label:**
 
 ```
-[blank — what do you do if the LLM returns a label that isn't in VALID_LABELS?
-What should label be set to?]
+Check whether label_raw is in VALID_LABELS. If it is, use it as the label.
+If it is not (e.g., the LLM returned "story", "unknown", an empty string, or
+a label line was never found), set label to "unknown".
+
+  label = label_raw if label_raw in VALID_LABELS else "unknown"
 ```
 
 ---
@@ -178,9 +213,21 @@ What should label be set to?]
 **Step 5 — Handle errors gracefully:**
 
 ```
-[blank — what could go wrong? (Network error? Unparseable response?)
-What should the function return if something fails?
-Hint: the evaluation loop runs 20 calls — one bad response shouldn't crash everything.]
+Wrap the entire function body in a try/except. On any exception, return the
+same dict shape with label "unknown" so the evaluation loop can continue.
+
+Things that can go wrong:
+- Network or API error (timeout, rate limit, auth failure) — the API call throws
+- Empty response or response with no content — response.choices[0].message.content
+  is None or empty, causing an AttributeError or producing no parseable lines
+- Unparseable response — "Label: " line is missing or malformed; Step 3 returns
+  an empty label_raw, Step 4 maps it to "unknown" without needing the except
+
+  try:
+      # Steps 1–4 here
+      return {"label": label, "reasoning": reasoning}
+  except Exception:
+      return {"label": "unknown", "reasoning": ""}
 ```
 
 ---
