@@ -44,8 +44,11 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Formula:**
 
 ```
-[blank — write out the accuracy formula in plain English.
- What counts as "correct"? What do you divide by?]
+accuracy = number of positions where predictions[i] == ground_truth[i]
+           ÷ total number of predictions
+
+"Correct" means the predicted label exactly matches the ground-truth label at
+the same index. Divide by the length of the list (total episodes evaluated).
 ```
 
 ---
@@ -53,10 +56,9 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Step-by-step logic:**
 
 ```
-[blank — describe the steps your code will take.
- 1. ...
- 2. ...
- 3. ...]
+1. If both lists are empty, return 0.0.
+2. Count the number of indices where predictions[i] == ground_truth[i].
+3. Divide that count by len(predictions) and return the result as a float.
 ```
 
 ---
@@ -64,7 +66,9 @@ Returns the fraction of predictions that exactly match the ground truth.
 **Edge case — what if both lists are empty?**
 
 ```
-[blank — what should the function return? Why?]
+Return 0.0. There are no episodes to evaluate, so there are no correct
+predictions. Returning 0.0 also avoids a ZeroDivisionError from dividing
+by len([]).
 ```
 
 ---
@@ -75,7 +79,13 @@ Returns the fraction of predictions that exactly match the ground truth.
 predictions  = ["interview", "solo", "panel", "interview"]
 ground_truth = ["interview", "solo", "solo",  "narrative"]
 
-[blank — what does compute_accuracy() return for these inputs? Show your work.]
+Index 0: "interview" == "interview" ✓
+Index 1: "solo"      == "solo"      ✓
+Index 2: "panel"     != "solo"      ✗
+Index 3: "interview" != "narrative" ✗
+
+correct = 2, total = 4
+accuracy = 2 / 4 = 0.5
 ```
 
 ---
@@ -113,8 +123,9 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **What does "correct" mean for a given class?**
 
 ```
-[blank — be precise. When does an episode count as correctly classified
- for the "interview" class, for example?]
+An episode counts as correct for class X when ground_truth[i] == X AND
+predictions[i] == X. Both must be true: the episode actually belongs to
+class X, and the model predicted X for it.
 ```
 
 ---
@@ -122,7 +133,9 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **What does "total" mean for a given class?**
 
 ```
-[blank — is "total" the total number of predictions, or something more specific?]
+Total for class X = the number of episodes where ground_truth[i] == X.
+It is the count of episodes that actually belong to that class, regardless
+of what the model predicted. It is NOT the total number of all predictions.
 ```
 
 ---
@@ -130,12 +143,13 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **Step-by-step logic:**
 
 ```
-[blank — describe the steps your code will take.
- 1. Initialize ...
- 2. Loop over ...
- 3. For each pair (predicted, truth) ...
- 4. After the loop ...
- 5. Return ...]
+1. Initialize a dict for each label in VALID_LABELS with correct=0, total=0.
+2. Loop over zip(predictions, ground_truth) to get each (predicted, truth) pair.
+3. For each pair: increment total[truth] by 1; if predicted == truth, also
+   increment correct[truth] by 1.
+4. After the loop, compute accuracy for each label: correct / total if total > 0,
+   else 0.0.
+5. Return the dict with all four labels populated.
 ```
 
 ---
@@ -143,8 +157,10 @@ A `dict` keyed by label. Each value is a dict with three keys:
 **Edge case — what if a class has no examples in ground_truth (total == 0)?**
 
 ```
-[blank — what should accuracy be set to? Why?
- Hint: look at the docstring in evaluate.py.]
+Set accuracy to 0.0. Dividing correct / total would be a ZeroDivisionError,
+and None would break any downstream comparison. 0.0 signals "no data" without
+crashing — the caller can check total == 0 if they need to distinguish it from
+a class that was always wrong.
 ```
 
 ---
@@ -155,14 +171,19 @@ A `dict` keyed by label. Each value is a dict with three keys:
 predictions  = ["interview", "interview", "solo", "panel", "panel"]
 ground_truth = ["interview", "solo",      "solo", "panel", "narrative"]
 
-[blank — fill in the per-class results table below]
+Pair-by-pair:
+  (interview, interview) → interview total+1, interview correct+1
+  (interview, solo)      → solo total+1       (predicted wrong, no correct++)
+  (solo,      solo)      → solo total+1, solo correct+1
+  (panel,     panel)     → panel total+1, panel correct+1
+  (panel,     narrative) → narrative total+1  (predicted wrong, no correct++)
 
 label       correct  total  accuracy
 ----------  -------  -----  --------
-interview   [blank]  [blank]  [blank]
-solo        [blank]  [blank]  [blank]
-panel       [blank]  [blank]  [blank]
-narrative   [blank]  [blank]  [blank]
+interview      1       1      1.0
+solo           1       2      0.5
+panel          1       1      1.0
+narrative      0       1      0.0
 ```
 
 ---
