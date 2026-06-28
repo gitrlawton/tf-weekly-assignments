@@ -30,9 +30,9 @@ def calculate_streak(user_id: str) -> int:
     if not events:
         return 0
 
-    # Collect unique reading dates, most recent first.
+    # Collect unique finish dates, most recent first.
     dates = sorted(
-        set(e.started_at.date() for e in events),
+        set(e.finished_at.date() for e in events),
         reverse=True,
     )
 
