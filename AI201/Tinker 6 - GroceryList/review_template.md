@@ -70,41 +70,47 @@ For each issue you find, note: where it is (file + function), what's wrong, and 
 ### Summary
 *What does this PR do? (1–2 sentences in your own words)*
 
->
+> This PR adds a list statistics endpoint (`GET /lists/<list_id>/stats`) to summarize the total, purchased, and remaining items on a grocery list, along with a category-wise item count breakdown for active shopping.
 
 ### Issues
 
 **Issue 1**
-- Location:
-- What's wrong:
-- Why it matters:
-- Suggested fix:
+- Location: `prs/pr2_list_stats.py` — `get_list_stats()`
+- What's wrong: The function queries the database for items belonging to `list_id` without verifying if the list itself actually exists in the `GroceryList` table.
+- Why it matters: If a client calls this endpoint with a nonexistent list ID, the server returns a `200 OK` with all counts set to 0. This is inconsistent with other routes in the app (like `GET /lists/<list_id>/items`), which correctly return a `404 Not Found` for invalid lists.
+- Suggested fix: Verify the list's existence by fetching it first, raising a `ValueError` if it's missing (which the route handler will convert to a `404`):
+  ```python
+  grocery_list = db.session.get(GroceryList, list_id)
+  if not grocery_list:
+      raise ValueError(f"List {list_id!r} not found")
+  ```
 
 **Issue 2**
-- Location:
-- What's wrong:
-- Why it matters:
-- Suggested fix:
-
-**Issue 3** *(if found)*
-- Location:
-- What's wrong:
-- Why it matters:
-- Suggested fix:
+- Location: `prs/pr2_list_stats.py` — `get_list_stats()`
+- What's wrong: The `by_category` dictionary counts all items in the list, including those that have already been purchased. This contradicts the frontend request, which asked for a breakdown of "what's left" (remaining items) by category.
+- Why it matters: In production, the active shopping view will show categories and counts for items that are already purchased and marked done, confusing the shopper and cluttering the navigation view.
+- Suggested fix: Only increment the category count if the item is not yet purchased:
+  ```python
+  by_category = {}
+  for item in items:
+      if not item.is_purchased:
+          cat = item.category or "uncategorized"
+          by_category[cat] = by_category.get(cat, 0) + 1
+  ```
 
 ### Questions for the Author
 *A good code review often surfaces design questions, not just bugs. What would you want to clarify before approving?*
 
->
+> 1. Did the frontend team specify if they wanted the category breakdown to include all items on the list, or only the remaining (unpurchased) ones? (The request says "what's left by category").
+> 2. Should we align this endpoint's error response with the standard `GET /lists/<list_id>/items` behavior by raising a `404 Not Found` when the list ID doesn't exist?
 
 ### Verdict
 - [ ] Approve — ship it
-- [ ] Request Changes — needs fixes before merging
+- [x] Request Changes — needs fixes before merging
 - [ ] Comment — needs discussion before a verdict
 
 **Rationale** *(1–2 sentences)*:
-
->
+> The PR fails to return a 404 error for invalid lists, and the category breakdown incorrectly includes already purchased items, which does not match the frontend's functional request.
 
 ---
 
