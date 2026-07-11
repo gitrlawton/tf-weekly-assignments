@@ -121,3 +121,4 @@ If you have PostgreSQL installed natively on Windows (e.g. from a previous proje
 
 **`alembic upgrade head` fails with "No module named asyncpg":**
 - Run: `.venv/Scripts/pip install asyncpg` (Windows) or `.venv/bin/pip install asyncpg` (Mac/Linux).
+
