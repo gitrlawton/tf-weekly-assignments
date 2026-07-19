@@ -4,6 +4,11 @@
 
 **Issue title:** API docs don't include example curl commands #117
 
+**Issue Description:**
+docs/API.md describes each endpoint but has no example invocations. Developers setting up the project for the first time can't quickly verify the API is working.
+
+Relevant files: docs/API.md
+
 **Tier:** [x] Tier 1  [ ] Tier 2  [ ] Tier 3
 
 **Problem summary:**
@@ -14,3 +19,15 @@ The current `docs/API.md` file outlines the backend endpoints but lacks practica
 **Setup confirmation:** [x] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
+
+## Week 8 — Reproduction & solution planning
+
+**Reproduction commit link:** N/A (documentation issue, no reproduction steps needed)
+
+**Reproduction summary:**
+I inspected `docs/API.md` and verified that it lacks request payloads, header details, and executable `curl` command examples. Additionally, by cross-referencing with `api/routes/`, I observed that endpoints such as `PUT /profiles/{profile_id}` and `GET /reviews/{review_id}/status` are missing entirely from the documentation.
+
+**PLAN.md link:** [link to PLAN.md in your fork]
+
+**Blockers or open questions:**
+None. I have mapped the API routes, parameter types (JSON for register/reviews, urlencoded form-data for login, multipart form-data for profile creation, and path variables), and authorization headers needed to construct comprehensive `curl` examples.
