@@ -27,7 +27,7 @@ The current `docs/API.md` file outlines the backend endpoints but lacks practica
 **Reproduction summary:**
 I inspected `docs/API.md` and verified that it lacks request payloads, header details, and executable `curl` command examples. Additionally, by cross-referencing with `api/routes/`, I observed that endpoints such as `PUT /profiles/{profile_id}` and `GET /reviews/{review_id}/status` are missing entirely from the documentation.
 
-**PLAN.md link:** [link to PLAN.md in your fork]
+**PLAN.md link:** [link to PLAN.md](https://github.com/gitrlawton/tf-weekly-assignments/blob/main/AI201/Show%201%20-%20PathReview/PLAN.md)
 
 **Blockers or open questions:**
 None. I have mapped the API routes, parameter types (JSON for register/reviews, urlencoded form-data for login, multipart form-data for profile creation, and path variables), and authorization headers needed to construct comprehensive `curl` examples.
