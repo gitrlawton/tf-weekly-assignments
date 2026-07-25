@@ -39,11 +39,11 @@ None. I have mapped the API routes, parameter types (JSON for register/reviews, 
 **Branch:** docs/117-api-curl-examples
 
 **What you built:**
-[1–3 sentences summarizing what your fix does and how it works]
+I updated `docs/API.md` to include comprehensive, copy-pasteable `curl` examples, HTTP headers, request payloads, and response JSON formats. I also added documentation for previously undocumented endpoints such as `PUT /profiles/{profile_id}` and `GET /reviews/{review_id}/status`.
 
 **Tests added or updated:**
-[Which test files did you touch? What do they cover?]
+No test files were touched or added as this is a documentation-only change.
 
-**Self-review confirmation:** [ ] make check passes  [ ] make test-unit passes
+**Self-review confirmation:** [x] make check passes  [x] make test-unit passes
 
 **Draft PR feedback received from:** "none"
