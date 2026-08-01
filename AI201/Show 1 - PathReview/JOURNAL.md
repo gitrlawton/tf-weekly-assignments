@@ -34,8 +34,6 @@ None. I have mapped the API routes, parameter types (JSON for register/reviews, 
 
 ## Week 9 — Solution building & PR submission
 
-**PR link:** [link to your submitted pull request (will update after I have opened it)]
-
 **Branch:** docs/117-api-curl-examples
 
 **What you built:**
@@ -47,3 +45,22 @@ No test files were touched or added as this is a documentation-only change.
 **Self-review confirmation:** [x] make check passes  [x] make test-unit passes
 
 **Draft PR feedback received from:** "none"
+
+## Week 10 — Iteration & reflection
+
+### Reflection
+
+**What was harder than you expected?**
+Mapping out the exact request structures and formats for the endpoints was harder than expected because some active endpoints (like `PUT /profiles/{profile_id}` and `GET /reviews/{review_id}/status`) were completely missing from the existing documentation. I had to carefully inspect the FastAPI route decorators and Pydantic schemas in the backend codebase to construct accurate request bodies, query parameters, and path variables.
+
+**What did you learn about working in a large codebase?**
+I learned that even for a documentation-only task, reading and understanding the controller, schema, and routing code is vital to ensure you don't document outdated API behavior. It's not enough to trust existing docs. Cross-referencing implementation details (like headers, dependency injection, and parameter types) is key to making sure everything is correct.
+
+**How did AI tools help — and where did they fall short?**
+AI tools were excellent for fast file searches and translating Python Pydantic models into sample request/response JSON examples. However, they occasionally struggled with distinguishing between content types, such as standard JSON payloads versus FastAPI's Form parameters (used in `POST /auth/login` and `POST /profiles`). I had to manually review the source code to correct the arguments in the `curl` examples.
+
+**What would you do differently if you started over?**
+If I started over, I would launch the API locally and inspect the `/docs` (Swagger UI) first. Having that interactive UI or importing the raw OpenAPI JSON into a tool like Postman would have speeded up the discovery of missing endpoints and parameter types, rather than scanning the individual python files manually.
+
+**What are you most proud of from this module?**
+I am most proud of writing documentation that is complete and robust. Instead of just creating quick placeholder commands, I detailed the exact authentication setups, headers, content types, and sample JSON request/response bodies, including previously undocumented endpoints, making it extremely easy for future developers to verify their setup.
