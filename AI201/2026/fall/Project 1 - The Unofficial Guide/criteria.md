@@ -23,8 +23,8 @@ For at least 4 of my 5 test questions, the retrieved chunks include one that
 contains the answer.
 
 **Why this target:**
-<!-- e.g. "One of my questions is about a topic only two documents mention, so
-     I expect that one to be hard." -->
+
+I picked 4 of 5 because while four of my questions target common, heavily-discussed topics in the threads, one is about a specific detail mentioned in only a single reply, making it much easier for retrieval to miss. Expecting 5 of 5 before tuning the chunking feels overly optimistic, but getting fewer than 4 would mean retrieval is failing on obvious thread topics.
 
 ---
 
@@ -33,8 +33,9 @@ contains the answer.
 Every answer the system produces names at least one source document.
 
 **Why this target:**
-<!-- Why all five and not four? What about your setup makes that achievable —
-     or what would have to go wrong for it not to be? -->
+
+
+I am requiring all 5 answers to cite a source because the system prompt explicitly passes the filename alongside each retrieved reply. If the model answers without naming a thread, it means it is ignoring prompt instructions or hallucinating general advice instead of grounding its response in what students actually posted.
 
 ---
 
@@ -50,48 +51,35 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
+
+I chose 4 of 5 because four of the out-of-scope questions (like car maintenance or world history) have zero conceptual overlap with college forum threads, but one might share common vocabulary with campus life. Setting a looser goal like 3 of 5 would allow too many unrelated queries through to the generator.
+
 <!-- What did your distances look like when you set the cutoff in Milestone 4?
      Was there a clean gap, or did the two groups overlap? -->
 
 ---
 
-## 4. Something about your chunks
+## 4. Chunks
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
-
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
-
+Across a sample of 10 chunks, at least 8 of them start and end on complete sentences rather than mid-sentence cuts.
+(test with `python app.py chunks -n 10`)
 
 
 **Why this target:**
 
-
+The advice_threads corpus is organized into short, discrete replies separated by vote count headers. I chose 4 of 5 because each chunk needs to hold the substantive student advice rather than cutting off halfway through a reply or capturing an empty header, while leaving a small allowance for rare longer replies that might span across chunk boundaries.
 
 ---
 
-## 5. Your choice
+## 5. Maximum distance
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
+For at least 4 of my 5 test questions, the closest retrieved chunk is 0.30 or lower.
 
 
 
 **Why this target:**
 
-
+Because the advice threads use conversational student phrasing that closely mirrors how someone would ask a question, the vector embedder should find very tight semantic matches for direct queries.
 
 ---
 
