@@ -82,22 +82,33 @@ def fallback_split(
 
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
-
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
-
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
-
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    Split documents into chunks using fixed-size windows with overlap.
     """
-    return fallback_split(documents)
+    chunk_size = config.CHUNK_SIZE
+    overlap = config.CHUNK_OVERLAP
+
+    if overlap >= chunk_size:
+        raise ValueError("overlap has to be smaller than chunk_size")
+
+    chunks: list[Chunk] = []
+    for doc in documents:
+        start = 0
+        index = 0
+        while start < len(doc.text):
+            piece = doc.text[start : start + chunk_size].strip()
+            if piece:
+                chunks.append(
+                    Chunk(
+                        text=piece,
+                        source=doc.source,
+                        index=index,
+                        produced_by="chunker.py::split_documents",
+                    )
+                )
+                index += 1
+            start += chunk_size - overlap
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
