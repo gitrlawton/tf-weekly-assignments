@@ -296,7 +296,7 @@ def build_prompt(question: str, results) -> str:
     return (
         f"Documents:\n\n{context}\n\n"
         f"---\n\nQuestion: {question}\n\n"
-        f"Answer using only the documents above, and name the file you used."
+        f"Answer using only the information in the documents above. If they don't cover it, say you don't have enough information. Name the file you used."
     )
 
 

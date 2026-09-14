@@ -128,27 +128,36 @@ Empty office hours is the biggest unused resource here and I say that having was
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
 
-**Question:**
+**Question:** How much RAM do I need for CS courses?
 
 **Answer:**
 
+```text
+  (best distance 0.257, cutoff 0.6)
+
+You need 16GB of RAM for CS courses. 
+
+Source: `thread_laptop_specs.txt`
+
+Sources retrieved: thread_first_gen.txt, thread_laptop_specs.txt, thread_pass_fail.txt, thread_printing.txt, thread_professor_email.txt
 ```
-```
 
-**My relevance cutoff:**
+**My relevance cutoff:** 0.60
 
-<!-- The number you set in config.py, and how you got there.
-
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+I set my relevance cutoff to 0.60 because my five in-scope questions clustered tightly between 0.257 and 0.413, while all five out-of-scope questions were 0.828 or higher. Placing the cutoff at 0.60 sits right inside this 0.415 gap, allowing conversational variations of campus questions through while completely blocking unrelated topics.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+| How much RAM do I need for CS courses? | Yes | 0.257 |
+| When is the deadline to change your meal plan tier? | Yes | 0.322 |
+| Is a bike worth it for a 20 minute commute? | Yes | 0.322 |
+| What is the first step if you have a roommate conflict? | Yes | 0.348 |
+| What happens if you turn in an assignment late? | Yes | 0.413 |
+| What is the recommended dosage of ibuprofen for a headache? | No | 0.828 |
+| How do I write a for loop in Rust? | No | 0.871 |
+| How do I change the oil in a diesel engine? | No | 0.930 |
+| What is the capital of Mongolia? | No | 0.948 |
+| Who won the 1994 World Cup? | No | 0.952 |
 
 ## How I Used AI
 
