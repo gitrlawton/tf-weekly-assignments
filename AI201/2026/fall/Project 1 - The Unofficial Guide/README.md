@@ -1,6 +1,6 @@
 # The Unofficial Guide
 
-<!-- Replace this line with your name and which corpus you picked. -->
+Ryan Lawton, advice_threads
 
 > **This file is your submission.** Fill it in as you go — most sections get
 > written during the milestone that produces them, not at the end.
@@ -22,26 +22,14 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+I modified a retrieval-augmented question-answering system using the `advice_threads` corpus to answer practical college questions on dorms, academics, and campus life. The system retrieves relevant student discussions via semantic vector search and provides concise, cited answers while refusing queries outside the corpus.
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size:** 1000
+**Overlap:** 0
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
-
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+I chose a chunk size of 1000 and 0 overlap because every document in `advice_threads` is a short forum thread under 815 characters. Keeping each thread intact prevents mid-sentence cuts and ensures the model always sees the thread title and all student replies together.
 
 ## Sample Chunks
 
@@ -125,9 +113,6 @@ Empty office hours is the biggest unused resource here and I say that having was
 
 ## Sample Answer
 
-<!-- One complete question and answer, pasted as text, with the source line
-     visible. Milestone 4. -->
-
 **Question:** How much RAM do I need for CS courses?
 
 **Answer:**
@@ -161,18 +146,9 @@ I set my relevance cutoff to 0.60 because my five in-scope questions clustered t
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
+**1.** I asked AI to test fixed window chunking at 350 characters, but seeing mid-sentence cutoffs and orphan headers led me to switch to 1000-character chunks to preserve entire discussion threads.
 
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
-
-     Milestone 5. -->
-
-**1.**
-
-**2.**
+**2.** I asked AI to measure distance gaps for relevance cutoff tuning, and when near-miss campus queries slipped past the 0.60 gate, I added a second-layer grounding prompt in `generate.py` to enforce explicit refusals.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never

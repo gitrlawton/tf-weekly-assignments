@@ -67,7 +67,7 @@ Across a sample of 10 chunks, at least 8 of them start and end on complete sente
 
 **Why this target:**
 
-The advice_threads corpus is organized into short, discrete replies separated by vote count headers. I chose 4 of 5 because each chunk needs to hold the substantive student advice rather than cutting off halfway through a reply or capturing an empty header, while leaving a small allowance for rare longer replies that might span across chunk boundaries.
+The advice_threads corpus is organized into short, discrete replies separated by vote count headers. I chose 8 of 10 because each chunk needs to hold the substantive student advice rather than cutting off halfway through a reply or capturing an empty header, while leaving a small allowance for rare longer replies that might span across chunk boundaries.
 
 ---
 
