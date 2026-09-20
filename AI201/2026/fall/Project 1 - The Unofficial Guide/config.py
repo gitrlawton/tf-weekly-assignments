@@ -27,7 +27,7 @@ CORPUS = os.getenv("AI201_CORPUS", "advice_threads")
 # These are deliberately plain, generic numbers. Milestone 3 is where you
 # replace them with numbers that fit the documents you actually read.
 
-CHUNK_SIZE = 1000       # characters per chunk
+CHUNK_SIZE = 1000      # characters per chunk
 CHUNK_OVERLAP = 0        # characters shared between neighbouring chunks
 
 
