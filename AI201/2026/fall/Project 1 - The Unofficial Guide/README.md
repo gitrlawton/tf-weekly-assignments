@@ -159,21 +159,9 @@ I set my relevance cutoff to 0.60 because my five in-scope questions clustered t
 
 # Week 2
 
-<!-- These sections get ADDED to what's already above. Don't delete or rewrite
-     week 1 — the point is that someone can see what you said before you knew
-     how it went. -->
 
 ## Run Log — Before
 
-<!-- Your five criteria, three runs each. `python run_eval.py --label before`
-     runs the questions, puts the OUT_OF_SCOPE ones through the gate, and
-     writes it all into results/ for you. Targets come from criteria.md; the
-     verdict column is your call.
-
-     Criterion 3 is measured in one deterministic pass rather than three, so
-     the same number goes in all three run columns. That's correct, not lazy.
-
-     Milestone 1. -->
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
@@ -199,23 +187,11 @@ I set my relevance cutoff to 0.60 because my five in-scope questions clustered t
 
 ## Diagnoses
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
+**Missed Criterion 5: Top distance <= 0.30 (scored 1 of 5)**
 
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
-
-     The five stages: loading → chunking → embedding → retrieval → generation.
-
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
-
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
-
-     Milestone 3. -->
+- **Stage:** **Chunking & Embedding**
+- **Mechanism:** Because I configured chunk size to 1000 characters to keep each advice thread intact as a single chunk, each chunk contains the thread title along with 3 to 4 distinct student replies and vote counts. The embedding model (`all-MiniLM-L6-v2`) produces a dense vector that represents the blended semantic average of the whole discussion. When a user asks a short, specific question targeting one individual detail (like the 10-day deadline in `thread_meal_plan_tier.txt`), matching a short query against an 800-character multi-reply thread dilutes the cosine similarity, floating distances into the `0.32` to `0.41` range even though the retrieved document is 100% correct.
+- **Pattern across misses:** All four misses followed the exact same pattern: the query asked about a specific detail contained in a single reply within a larger thread chunk. The only question that scored <= 0.30 was the CS RAM question (`0.2570`), where the query vocabulary mirrored the thread title and primary reply almost verbatim.
 
 ## The Improvement
 
