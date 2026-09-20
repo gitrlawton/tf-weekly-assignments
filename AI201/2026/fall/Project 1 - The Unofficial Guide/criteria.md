@@ -81,6 +81,10 @@ For at least 4 of my 5 test questions, the closest retrieved chunk is 0.30 or lo
 
 Because the advice threads use conversational student phrasing that closely mirrors how someone would ask a question, the vector embedder should find very tight semantic matches for direct queries.
 
+> **Revised in week 2:** For at least 4 of 5 test questions, the rank-1 retrieved chunk is the correct document containing the answer, and its distance is at least 0.15 below the 0.60 relevance cutoff.
+>
+> **Why revised:** Measuring an absolute distance threshold of $\le 0.30$ ended up measuring query syntax and length rather than actual retrieval correctness. For example, the late work question retrieved the exact correct thread (`thread_late_work.txt`) at rank 1 with all the right information, but scored `0.413` due to natural phrasing variation. The revised criterion measures whether the top-ranked result is genuinely the right document and holds a clear margin below the gate.
+
 ---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
