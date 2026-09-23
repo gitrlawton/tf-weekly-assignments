@@ -47,53 +47,33 @@
 
 ## Tool Inventory
 
-<!-- Four lines per tool. This is worth 2 points and it's the single most
-     common place students lose them.
-
-     "Returns a list" earns NOTHING. The description has to say what is IN
-     the list.
-
-     The empty case isn't optional either — it's the thing your loop branches
-     on, and if you don't decide it here you'll discover it as a crash in
-     Milestone 5. -->
-
 ### `search_listings`
 
-- **What it does:**
-- **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Searches through thrift dataset listings by matching keywords against titles and descriptions, filtering optionally by size and price ceiling.
+- **Inputs:** `description` (str), `size` (str or None), `max_price` (float or None).
+- **Returns:** A list of listing dicts (each containing `id`, `title`, `description`, `category`, `style_tags`, `size`, `condition`, `price`, `colors`, `brand`, and `platform`), ranked by match score.
+- **When it has nothing:** Returns an empty list (`[]`).
 
 ### `suggest_outfit`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Generates 1–2 outfit combinations pairing a found thrift item with items the user already owns in their wardrobe.
+- **Inputs:** `new_item` (dict), `wardrobe` (dict with an `'items'` key containing a list of item dicts).
+- **Returns:** A non-empty string containing formatted outfit suggestions and styling tips.
+- **When it has nothing:** Returns a string with general styling advice for the item when `wardrobe['items']` is empty.
 
 ### `create_fit_card`
 
-- **What it does:**
-- **Inputs:**
-- **Returns:**
-- **When it has nothing:**
+- **What it does:** Writes a 2-to-4 sentence social media caption highlighting the thrift find, its vibe, price, and marketplace platform.
+- **Inputs:** `outfit` (str), `new_item` (dict).
+- **Returns:** A 2-to-4 sentence string caption ready to post.
+- **When it has nothing:** Returns a descriptive fallback message string about the standalone item if `outfit` is empty or whitespace.
+
 
 ---
 
 ## Planning Loop
 
-<!-- Your branch rule, stated as a rule — the condition AND both paths — plus
-     the file and function that holds it.
-
-     Like this:
-       "If search_listings returns an empty list, put a message in the session
-        and stop. Otherwise take the first result and go to suggest_outfit."
-        — agent.py::run_agent
-
-     The grader checks your code against what you claim here, so the file and
-     function have to be real. -->
-
-**Branch rule:**
+**Branch rule:** If `search_listings` returns an empty list (`[]`), store an error message in `session["error"]` stating no matches were found and stop execution. Otherwise, select the top matching item (`session["selected_item"] = listings[0]`) and proceed to call `suggest_outfit`.
 
 **Where it lives:** `agent.py::run_agent`
 
