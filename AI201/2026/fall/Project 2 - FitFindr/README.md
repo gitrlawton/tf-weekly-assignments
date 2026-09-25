@@ -39,7 +39,7 @@
 
 ## What This Does
 
-<!-- Three or four sentences: what a user asks for, and what they get back. -->
+FitFindr is an AI styling agent that helps users find thrifted clothing and style it with pieces they already own. A user enters a natural language search query describing an item they want, along with optional price limits and size preferences (such as 'vintage graphic tee under $30'). The agent searches second-hand listings, selects the best match, and generates personalized outfit combinations based on the user's saved wardrobe. Finally, it creates a concise, ready-to-post social media caption ('fit card') highlighting the thrift score, price, platform, and overall aesthetic.
 
 
 
@@ -147,24 +147,17 @@ Scored these Vintage Levi's 501 Jeans in a perfect medium wash on depop for just
 
 ## How I Used AI
 
-<!-- Two specific moments. What you asked, what came back, what you changed.
-
-     "I used Claude to help me code" is not enough.
-
-     "I gave Claude my search_listings spec. It returned None on no match
-     instead of an empty list, so I changed it" is the level we want. -->
-
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Implementing the size matching filter for `search_listings` to handle varying formats like "S", "M", "S/M", and "XL (oversized)".
+- *What came back:* An initial implementation used basic substring matching (`target_size in item_size`), which caused size "S" to incorrectly match "US 9" shoe sizes and "L" to match "XL".
+- *What I changed:* Replaced the simple substring check with regex tokenization (`re.split(r"[/()\s]+", ...)`) to match specific size tokens cleanly while preventing false positive shoe and size matches.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Structuring the planning loop in `agent.py::run_agent` to pass intermediate data between the three tools.
+- *What came back:* Code that passed results directly across function calls using local variables (`outfit = suggest_outfit(selected, wardrobe); fit_card = create_fit_card(outfit, selected)`).
+- *What I changed:* Modified every tool call to explicitly write to and read back from the central `session` dictionary (`session["selected_item"]`, `session["outfit_suggestion"]`, etc.) to keep state transparent and testable.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
