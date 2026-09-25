@@ -73,7 +73,7 @@
 
 ## Planning Loop
 
-**Branch rule:** If `search_listings` returns an empty list (`[]`), store an error message in `session["error"]` stating no matches were found and stop execution. Otherwise, select the top matching item (`session["selected_item"] = listings[0]`) and proceed to call `suggest_outfit`.
+**Branch rule:** If `search_listings` returns an empty list (`[]`), store an error message in `session["error"]` stating what to change (price limit, size, or broader keywords) and stop execution. Otherwise, select the top matching item (`session["selected_item"] = session["search_results"][0]`) and proceed to call `suggest_outfit` and `create_fit_card`.
 
 **Where it lives:** `agent.py::run_agent`
 

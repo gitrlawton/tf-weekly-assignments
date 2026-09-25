@@ -49,6 +49,59 @@ def new_session(query: str, wardrobe: dict) -> dict:
 
 # ── planning loop ─────────────────────────────────────────────────────────────
 
+def parse_query(query: str) -> dict:
+    """
+    Parse a natural language query into search parameters (description, size, max_price).
+    Uses regex pattern extraction to pull out price ceilings and sizes.
+    """
+    import re
+
+    text = query.strip()
+    max_price = None
+    size = None
+
+    # 1. Extract price ceiling (e.g. 'under $30', 'under 30', 'max $50', '< $25')
+    price_match = re.search(
+        r"(?:under|below|less than|max(?: price)?)\s*\$?(\d+(?:\.\d+)?)",
+        text,
+        re.IGNORECASE,
+    )
+    if price_match:
+        max_price = float(price_match.group(1))
+        text = text[:price_match.start()] + " " + text[price_match.end():]
+    else:
+        dollar_match = re.search(r"\$(\d+(?:\.\d+)?)", text)
+        if dollar_match:
+            max_price = float(dollar_match.group(1))
+            text = text[:dollar_match.start()] + " " + text[dollar_match.end():]
+
+    # 2. Extract size (e.g. 'size XXS', 'size M', 'size S/M', 'size US 9')
+    size_match = re.search(
+        r"\bsize\s+([a-zA-Z0-9/]+(?:\s+[a-zA-Z0-9/]+)?)",
+        text,
+        re.IGNORECASE,
+    )
+    if size_match:
+        size = size_match.group(1).strip()
+        text = text[:size_match.start()] + " " + text[size_match.end():]
+
+    # 3. Clean remaining text to form description keywords
+    desc = re.sub(
+        r"^(?:i(?:'m| am)?\s+)?(?:looking for|find(?: me)?|search(?: for)?|i want|get me)\s+(?:an?|some)?\s*",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    desc = re.sub(r"[,;]+", " ", desc).strip()
+    desc = re.sub(r"\s+", " ", desc)
+
+    return {
+        "description": desc,
+        "size": size,
+        "max_price": max_price,
+    }
+
+
 def run_agent(query: str, wardrobe: dict) -> dict:
     """
     Run the loop once and return the finished session.
@@ -107,8 +160,58 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     """
     session = new_session(query, wardrobe)
 
-    # TODO: delete these two lines and build the loop.
-    session["error"] = "The planning loop isn't built yet — see the TODO in agent.py."
+    # 1. Iteration guard
+    iteration_count = 1
+    trace.check_iterations(iteration_count)
+
+    # 2. Parse query
+    parsed = parse_query(query)
+    session["parsed"] = parsed
+
+    # 3. Step 1: Search listings
+    results = search_listings(
+        description=parsed.get("description", ""),
+        size=parsed.get("size"),
+        max_price=parsed.get("max_price"),
+    )
+    session["search_results"] = results
+
+    # 4. Branch Rule: If no items found, stop immediately and guide the user
+    if not results:
+        suggestions = []
+        if parsed.get("max_price") is not None:
+            suggestions.append(f"raising your price limit above ${parsed['max_price']:.0f}")
+        if parsed.get("size"):
+            suggestions.append(f"checking other sizes besides '{parsed['size']}'")
+        suggestions.append("using broader search keywords (e.g. 'tee' or 'jacket')")
+
+        advice = " or ".join(suggestions)
+        session["error"] = (
+            f"No thrift listings matched your search '{query}'. "
+            f"Try {advice}."
+        )
+        return session
+
+    # 5. Select the best match into the session
+    session["selected_item"] = session["search_results"][0]
+
+    try:
+        # 6. Step 2: Suggest outfit reading strictly from session
+        session["outfit_suggestion"] = suggest_outfit(
+            new_item=session["selected_item"],
+            wardrobe=session["wardrobe"],
+        )
+
+        # 7. Step 3: Create fit card reading strictly from session
+        session["fit_card"] = create_fit_card(
+            outfit=session["outfit_suggestion"],
+            new_item=session["selected_item"],
+        )
+
+    except ModelUnavailable as exc:
+        session["error"] = str(exc)
+        return session
+
     return session
 
 
