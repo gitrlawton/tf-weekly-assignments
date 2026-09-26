@@ -66,7 +66,6 @@ from tools import search_listings as _search_listings_impl  # noqa: F401 — you
 # CallToolRequest" and the output you actually care about scrolls away.
 mcp = FastMCP("fitfindr", log_level="WARNING")
 
-
 # ── TODO: uncomment and fill this in ──────────────────────────────────────────
 #
 # @mcp.tool()
@@ -85,6 +84,19 @@ mcp = FastMCP("fitfindr", log_level="WARNING")
 #     return _search_listings_impl(description, size, max_price)
 #
 # ──────────────────────────────────────────────────────────────────────────────
+# ── Register search_listings tool ─────────────────────────────────────────────
+
+@mcp.tool()
+def search_listings(
+    description: str,
+    size: str | None = None,
+    max_price: float | None = None,
+) -> list[dict]:
+    """
+    Search thrift catalog listings by description keywords, with optional size and max_price ceiling filters.
+    Returns a list of matching listing dicts, or an empty list if no matches are found.
+    """
+    return _search_listings_impl(description, size, max_price)
 #
 # Two notes on the block above.
 #
