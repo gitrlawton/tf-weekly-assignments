@@ -15,6 +15,7 @@ Build and test your three tools in `tools.py` first. Then come here.
 
 import config
 import trace
+import mcp_client
 from tools import search_listings, suggest_outfit, create_fit_card
 from generate import ModelUnavailable
 
@@ -168,11 +169,14 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     parsed = parse_query(query)
     session["parsed"] = parsed
 
-    # 3. Step 1: Search listings
-    results = search_listings(
-        description=parsed.get("description", ""),
-        size=parsed.get("size"),
-        max_price=parsed.get("max_price"),
+    # 3. Step 1: Search listings (via MCP)
+    results = mcp_client.call_tool(
+        "search_listings",
+        {
+            "description": parsed.get("description", ""),
+            "size": parsed.get("size"),
+            "max_price": parsed.get("max_price"),
+        },
     )
     session["search_results"] = results
 
