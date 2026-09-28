@@ -170,18 +170,18 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     session["parsed"] = parsed
 
     # 3. Step 1: Search listings (via MCP)
-    results = mcp_client.call_tool(
-        "search_listings",
-        {
-            "description": parsed.get("description", ""),
-            "size": parsed.get("size"),
-            "max_price": parsed.get("max_price"),
-        },
-    )
+    search_inputs = {
+        "description": parsed.get("description", ""),
+        "size": parsed.get("size"),
+        "max_price": parsed.get("max_price"),
+    }
+    results = mcp_client.call_tool("search_listings", search_inputs)
     session["search_results"] = results
+    trace.step("search_listings (via MCP)", inputs=search_inputs, returned=results)
 
     # 4. Branch Rule: If no items found, stop immediately and guide the user
     if not results:
+        trace.step("branch", note="0 results returned, stopping early")
         suggestions = []
         if parsed.get("max_price") is not None:
             suggestions.append(f"raising your price limit above ${parsed['max_price']:.0f}")
@@ -205,11 +205,21 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             new_item=session["selected_item"],
             wardrobe=session["wardrobe"],
         )
+        trace.step(
+            "suggest_outfit",
+            inputs={"new_item": session["selected_item"], "wardrobe": session["wardrobe"]},
+            returned=session["outfit_suggestion"],
+        )
 
         # 7. Step 3: Create fit card reading strictly from session
         session["fit_card"] = create_fit_card(
             outfit=session["outfit_suggestion"],
             new_item=session["selected_item"],
+        )
+        trace.step(
+            "create_fit_card",
+            inputs={"outfit": session["outfit_suggestion"], "new_item": session["selected_item"]},
+            returned=session["fit_card"],
         )
 
     except ModelUnavailable as exc:

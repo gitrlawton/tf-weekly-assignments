@@ -241,19 +241,30 @@ that produced it:
 **Happy path**
 
 ```
-
+$ python app.py ask 'vintage graphic tee under $30' --trace
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey, Vintage Graphic Hoodie — Faded Black … +7 more
+[2] suggest_outfit
+      in:  dict with keys: new_item, wardrobe
+      out: Hey! As your stylist, I am giving this thrifted graphic tee a **huge yes**. Bootleg-style vintage tees have th…
+[3] create_fit_card
+      in:  dict with keys: outfit, new_item
+      out: Scored this vintage Graphic Tee — 2003 Tour Bootleg Style on Depop for just $24.00, and it is the ultimate gru…
 ```
 
 **Empty search**
 
 ```
-
+$ python app.py ask 'designer ballgown size XXS under $5' --trace
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+[2] branch
+      →    0 results returned, stopping early
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+**On the MCP move:** In `agent.py`, I replaced the direct in-process call to `search_listings` with `mcp_client.call_tool("search_listings", {...})` and registered the tool with FastMCP in `mcp_server.py`. The returned data structure remained the exact same `list[dict]` format as before, so downstream tools (`suggest_outfit` and `create_fit_card`) continued working seamlessly without any behavior changes.
 
 
 
