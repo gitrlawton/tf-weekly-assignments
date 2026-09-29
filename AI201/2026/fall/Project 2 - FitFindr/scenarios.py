@@ -29,11 +29,26 @@ SCENARIOS = [
         "criterion": 2,
     },
     {
-        # A user with nothing saved. One of unit 4's three failure modes.
+        # Checking state consistency across session transitions. Criterion 3.
+        "name": "state consistency across transitions",
+        "query": "vintage levi jeans size W30 under $45",
+        "wardrobe": "example",
+        "criterion": 3,
+    },
+    {
+        # Checking fit card quality, sentence count, price & platform. Criterion 4.
+        "name": "fit card format and details",
+        "query": "vintage leather bomber jacket under $100",
+        "wardrobe": "example",
+        "criterion": 4,
+    },
+    {
+        # A user with nothing saved. One of unit 4's three failure modes. Handling a
+        # user with an empty wardrobe gracefully. Criterion 5.
         "name": "empty wardrobe",
         "query": "denim jacket under $50",
         "wardrobe": "empty",
-        "criterion": None,
+        "criterion": 5,
     },
     # TODO: add what your criteria 3, 4 and 5 need.
     #
