@@ -214,17 +214,19 @@ that produced it:
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | A matching query completes all three tools | 4 of 5 | MISSED (3/5) | In 3 of 5 tries (Tries 1, 4, 5), all three tools completed and returned a fit card. In Tries 2 and 3, execution halted on the third tool due to transient upstream API errors. |
+| 2 | An impossible query stops before the second tool | 5 of 5 | MET (5/5) | In 5 of 5 tries, the empty search branch caught the 0-result condition, returned a message naming what to change, and never called `suggest_outfit`. |
+| 3 | Selected item ID matches across all session state transitions | 5 of 5 | MET (5/5) | In 5 of 5 tries, the selected item ID persisted in `session["selected_item"]` and remained identical across calls to `suggest_outfit` and `create_fit_card`. |
+| 4 | Fit card includes price, platform, and proper length | 4 of 5 | MET (4/5) | In 4 of 5 tries (Tries 1–4), the generated caption was 2–4 sentences long and explicitly stated the price and platform (Try 5 stopped early due to an API error). |
+| 5 | Graceful styling advice on empty wardrobe | 5 of 5 | MET (5/5) | In 5 of 5 tries, `suggest_outfit` successfully detected an empty wardrobe and provided general styling ideas without throwing an exception or hallucinating owned pieces. |
 
 **Diagnoses**
 
+- **Criterion 1 (3 of 5 — MISSED):**
+  - **Where it happened:** The model's output / API layer.
+  - **Step:** Step 3 of the loop (`tools.py::create_fit_card`).
+  - **Mechanism:** In Try 2 and Try 3, `search_listings` and `suggest_outfit` executed successfully and populated session state. However, on the 3rd step when calling `create_fit_card`, Google Gemini raised a transient `503 UNAVAILABLE` high-demand error. The exception was caught by `tools.py` and converted to `ModelUnavailable`, causing `agent.py::run_agent` to halt before producing the fit card. The tools and session state logic functioned correctly, but the lack of an exponential backoff retry mechanism in the tool/loop allowed transient API demand spikes to cause a miss on completing all three steps.
 
-
----
 
 ## Loop Trace
 
