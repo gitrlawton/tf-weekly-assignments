@@ -327,6 +327,9 @@ def generate(
                 "429" in message
                 or "resource" in message and "exhaust" in message
                 or "rate" in message and "limit" in message
+                or "503" in message
+                or "unavailable" in message
+                or "high demand" in message
             )
             if not rate_limited:
                 raise ModelUnavailable(_explain(exc)) from exc

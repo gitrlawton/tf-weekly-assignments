@@ -179,17 +179,18 @@ Scored these Vintage Levi's 501 Jeans in a perfect medium wash on depop for just
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. matching query completes | 4 of 5 | PASS | FAIL | FAIL | PASS | PASS | MISSED (3/5) |
+| 2. impossible query stops early | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. state consistency across transitions | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. fit card format and details | 4 of 5 | PASS | PASS | PASS | PASS | FAIL | MET (4/5) |
+| 5. empty wardrobe | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
 **Real output from one try**, pasted as text, naming the file and function
 that produced it:
 
-```
-
+```text
+# File: agent.py::run_agent & tools.py::create_fit_card (Criterion 1, Try 1)
+Scored this 2003 Tour Bootleg Style graphic tee on Depop for just $24.00, and it’s the ultimate grunge wardrobe workhorse. The boxy fit and vintage vibe drape effortlessly, whether I'm pairing it with baggy dark denim and combat boots or tucking it into wide-leg khakis. It adds instant streetwear texture and that I-didn't-try-hard-at-all coolness to every fit.
 ```
 
 ---
@@ -287,13 +288,13 @@ $ python app.py ask 'designer ballgown size XXS under $5' --trace
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. matching query completes | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. impossible query stops early | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. state consistency across transitions | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. fit card format and details | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. empty wardrobe | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Did it help, and how do I know:**
+**Did it help, and how do I know:** Yes. In the `before` run, Criterion 1 missed its target with 3/5 passes due to 2 dropped tries on transient 503 errors. In the `after` run, all 5 tries across all scenarios completed cleanly (5/5 passes across the board), successfully bringing Criterion 1 from MISSED (3/5) to MET (5/5).
 
 <!-- If it made things worse, say that. Honestly reported, that earns full
      credit and is more interesting than one that worked. -->
