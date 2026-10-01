@@ -309,6 +309,8 @@ $ python app.py ask 'designer ballgown size XXS under $5' --trace
      you did. "I ran out of time" is fine if it's true. Pretending nothing is
      left is not. -->
 
+None of the five defined acceptance criteria are missed in the after-evaluation run — all five criteria achieved 5 of 5 passes (**MET (5/5)** across all scenarios).
+
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
