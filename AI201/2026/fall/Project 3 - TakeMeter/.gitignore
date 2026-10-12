@@ -1,0 +1,30 @@
+# API keys — never commit these
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hugging Face model cache — big, and rebuildable
+.cache/
+models/
+
+# The notebook's training output directory. Checkpoints are hundreds of MB and
+# they are not evidence of anything — results.json is. Without this line a
+# `git add -A` in Colab commits a model checkpoint to your repo.
+takemeter_out/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# NOTE: results.json, results_three_seeds.json and baseline_results.json are
+# deliberately NOT ignored. They're evidence the run actually happened, and
+# they're part of what gets graded. Commit them.
