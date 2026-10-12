@@ -106,19 +106,19 @@ This project categorizes posts from online movie enthusiast communities (such as
 <!-- Where you collected from, how you labelled, your counts, and three hard
      cases. -->
 
-**Where the posts came from:**
+**Where the posts came from:** Online film discussion communities and forums (including r/movies, TrueFilm, and BoxOffice discussion threads).
 
-**How I labelled them:** <!-- Cold first? Pre-labelled with AI and corrected?
-Say so plainly — the disclosure is required, not penalised. -->
+**How I labelled them:** Cold-labelled the first 20 posts manually without assistance (5 from each category), then pre-labelled the remaining 180 and reviewed/verified every single post against the taxonomy definitions and boundary decision rules.
 
 **Counts per label:**
 
 | Label | Count | Share |
 |---|---|---|
-|  |  |  |
-|  |  |  |
-|  |  |  |
-| **Total** |  | 100% |
+| `craft_critique` | 50 | 25.0% |
+| `fan_theory` | 50 | 25.0% |
+| `recommendation_request` | 50 | 25.0% |
+| `industry_business` | 50 | 25.0% |
+| **Total** | 200 | 100% |
 
 **Three hard cases**
 
@@ -126,25 +126,25 @@ Say so plainly — the disclosure is required, not penalised. -->
      been, and what you chose. These are worth more than the easy 190. -->
 
 **1.**
-> *The post:*
+> *The post:* "In Blade Runner 2049, Deckard intentionally left wooden horse carvings across the wasteland to lead replicant resistance members to his daughter."
 >
-> *Could have been:*
+> *Could have been:* `craft_critique` or `fan_theory`
 >
-> *I chose, because:*
+> *I chose, because:* `fan_theory`, because it analyzes in-universe character motives and lore that were never explicitly verified in the narrative, rather than commenting on Denis Villeneuve's directing or Roger Deakins' cinematography.
 
 **2.**
-> *The post:*
+> *The post:* "Christopher Nolan leaving Warner Bros. for Universal over streaming release policies resulted in Universal granting him a 100-day theatrical window and 20% first-dollar gross."
 >
-> *Could have been:*
+> *Could have been:* `craft_critique` or `industry_business`
 >
-> *I chose, because:*
+> *I chose, because:* `industry_business`, because although it references an auteur filmmaker, the subject matter concerns distributor bidding wars, theatrical release windows, and contract economics rather than filmmaking technique.
 
 **3.**
-> *The post:*
+> *The post:* "What are the best sports biopics that focus on sports analytics and management strategy rather than on-field heroics, like Moneyball?"
 >
-> *Could have been:*
+> *Could have been:* `craft_critique` or `recommendation_request`
 >
-> *I chose, because:*
+> *I chose, because:* `recommendation_request`, because despite analyzing thematic tropes in sports cinema, the post's primary goal is asking the community to provide film recommendations.
 
 ---
 
