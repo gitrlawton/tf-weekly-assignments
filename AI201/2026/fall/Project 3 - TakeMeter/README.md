@@ -152,42 +152,23 @@ This project categorizes posts from online movie enthusiast communities (such as
 
 <!-- Your starting model, your settings, and anything you changed and why. -->
 
-**Base model:**
+**Base model:** `distilbert-base-uncased`
 
-**Settings:** <!-- epochs, learning rate, batch size, seed -->
+**Hardware / Device:** `cpu (CPU)` running PyTorch `2.14.1+cpu`
 
-**Anything I changed from the defaults, and why:**
+**Settings:** 3 epochs, learning rate `2e-5`, batch size 16, max sequence length 128, seed 42
 
-**Split sizes:** <!-- train / val / test, and per-label counts in the test
-split. If a label had fewer than about 8 in test, say so — it explains a lot
-of next unit's variance. -->
+**Anything I changed from the defaults, and why:** Kept default hyperparameters for this initial baseline fine-tuning run.
 
+**Split sizes:** 140 train (70%) / 30 val (15%) / 30 test (15%). 
 
+In the test split:
+- `craft_critique`: 8 examples
+- `industry_business`: 8 examples
+- `fan_theory`: 7 examples
+- `recommendation_request`: 7 examples
 
----
-
-## How I Used AI
-
-<!-- Two specific moments — what you asked, what came back, what you changed.
-
-     ⚠️ Plus disclosure of any pre-labelling. If you had a model pre-label a
-     batch and then read and corrected every one, say that. It's an allowed
-     workflow and disclosing it costs you nothing. Not disclosing it is the
-     problem. -->
-
-**Moment 1**
-
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
-
-**Moment 2**
-
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
-
-**Pre-labelling disclosure:**
+Both `fan_theory` and `recommendation_request` have fewer than 8 examples (7 each) in the test split, which means individual misclassifications will have a larger percentage impact on per-label F1 scores during multi-seed testing.
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
