@@ -51,61 +51,43 @@ whether you hit them:
 
 ---
 
-## 1.
+## 1. Overall accuracy
 
-<!-- Your criterion. It must name a number. -->
+Overall accuracy on the held-out test split is at least 0.65 across all three seeds.
 
-
-
-**Why this target:**
-
-
+**Why this target:** With four classes, random guessing achieves 25% (0.25). A threshold of 0.65 requires the model to correctly categorize nearly two out of every three posts on unseen data, which is sufficient for reliable automated feed sorting while accounting for seed-to-seed variance on a ~30-example test split.
 
 ---
 
-## 2.
+## 2. Macro performance balance
 
-<!-- Your criterion. -->
+Macro F1 score is at least 0.60 across all three seeds.
 
-
-
-**Why this target:**
-
-
+**Why this target:** Macro F1 weighs every label equally regardless of sample frequency. Requiring a macro score of 0.60 prevents the model from gaming overall accuracy by simply over-predicting the most frequent or easiest labels at the expense of harder categories.
 
 ---
 
-## 3.
+## 3. High precision on syntactic distinctness
 
-<!-- Your criterion. -->
+The F1 score for `recommendation_request` is at least 0.70 across all three seeds.
 
-
-
-**Why this target:**
-
-
+**Why this target:** Recommendation requests have clear linguistic markers (such as question formats and explicit phrasing like "looking for", "recommend", "similar to", "movies like"). Because its syntax is markedly distinct from analytical and speculative film posts, the model should identify this category with higher precision and recall than the other three.
 
 ---
 
-## 4.
+## 4. Minimum per-label performance floor
 
-<!-- Your criterion. -->
+Every individual label achieves an F1 score of at least 0.45 across all three seeds.
 
-
-
-**Why this target:**
-
-
+**Why this target:** The boundary between `craft_critique` and `fan_theory` is nuanced when posts analyze character motives or themes, and in a ~30-post test set, each label has only 7–8 examples where a single misclassification swings F1 by over 0.10. Setting a 0.45 floor ensures that even the most difficult class maintains nearly double the value of random chance (0.25) across all splits without collapsing.
 
 ---
 
-## 5.
+## 5. Seed stability and consistency
 
-<!-- Your criterion. -->
+The spread in overall accuracy across the three seeds (maximum accuracy minus minimum accuracy) is no greater than 0.15.
 
-
-
-**Why this target:**
+**Why this target:** In a small dataset of ~200 rows, a random seed split can occasionally produce an unusually favorable or unfavorable draw. A maximum spread of 0.15 confirms that the model's performance reflects genuine learned semantic patterns rather than an artifact of an unusually clean test partition.
 
 
 
