@@ -5,6 +5,7 @@
 #
 # Delete the examples below and put yours in.
 
-analysis: makes an argument backed by a specific, checkable fact
-hot_take: a confident claim with no support offered
-reaction: an immediate response to something that just happened
+craft_critique: evaluates the technical or artistic execution of a film (such as cinematography, sound design, editing, pacing, or performance) rather than expressing mere personal enjoyment
+fan_theory: proposes an unconfirmed narrative interpretation, lore connection, or alternative explanation for events inside a movie's fictional world
+recommendation_request: solicits movie suggestions from other members based on a specific mood, obscure subgenre, trope, or similarity to another title
+industry_business: discusses the commercial, financial, casting, or distribution realities of the film industry (such as box office numbers, studio mergers, or theatrical windows) rather than the content of a movie

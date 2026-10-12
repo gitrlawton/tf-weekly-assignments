@@ -39,10 +39,7 @@
 
 ## What This Does
 
-<!-- Your community, and what your classifier sorts posts into. Three or four
-     sentences. -->
-
-
+This project categorizes posts from online movie enthusiast communities (such as r/movies, film discussion forums, and Letterboxd discussions). These spaces feature a diverse mix of discourse ranging from technical filmmaking analyses to speculative lore and box office tracking. The classifier sorts posts into four distinct categories: `craft_critique`, `fan_theory`, `recommendation_request`, and `industry_business`. This automated categorization helps organize community feeds and distinguish between aesthetic discussions, speculative storytelling, audience discovery, and industry reporting.
 
 ---
 
@@ -54,33 +51,51 @@
      The decision rule is worth a point on its own and it's the thing most
      people leave out. Every taxonomy has a hardest boundary. Name yours. -->
 
-### `label_one`
+### `craft_critique`
 
-**Definition:**
-
-**Example 1:**
->
-
-**Example 2:**
->
-
-### `label_two`
-
-**Definition:**
+**Definition:** Evaluates the technical or artistic execution of a film (such as cinematography, sound design, editing, pacing, or performance) rather than expressing mere personal enjoyment.
 
 **Example 1:**
->
+> The sound design in Dune: Part Two does more worldbuilding than the dialogue; the low-frequency humming during the spice harvesting scene creates palpable physical tension.
 
 **Example 2:**
->
+> The third act of Sunshine completely falls apart because abruptly switching from hard sci-fi into a slasher with rapid-cut editing and lens flares undermines the claustrophobia built up over the first 70 minutes.
+
+### `fan_theory`
+
+**Definition:** Proposes an unconfirmed narrative interpretation, lore connection, or alternative explanation for events inside a movie's fictional world.
+
+**Example 1:**
+> In Inception, Cobb's actual totem isn't the spinning top—it's his wedding ring, because he is only wearing it during dream sequences and never in the scenes set in reality.
+
+**Example 2:**
+> The briefcase in Pulp Fiction contains Marcellus Wallace's soul, which explains the gold glow and the bandage on the back of his neck where the devil extracted it.
+
+### `recommendation_request`
+
+**Definition:** Solicits movie suggestions from other members based on a specific mood, obscure subgenre, trope, or similarity to another title.
+
+**Example 1:**
+> Looking for slow-burn 70s neo-noir detective films with cynical protagonists, similar in tone to The Long Goodbye and Chinatown.
+
+**Example 2:**
+> Can anyone recommend smart sci-fi thrillers that take place entirely in a single claustrophobic location, like Coherence or Moon?
+
+### `industry_business`
+
+**Definition:** Discusses the commercial, financial, casting, or distribution realities of the film industry (such as box office numbers, studio mergers, or theatrical windows) rather than the content of a movie.
+
+**Example 1:**
+> Opening to only $32M over a four-day Memorial Day weekend on a $168M production budget makes it mathematically difficult for the studio to break even without overseas carry.
+
+**Example 2:**
+> A24 securing a 45-day theatrical exclusivity window before shifting to VOD signals that mid-budget original movies can still command traditional theatrical runs.
 
 ### The hardest boundary
 
-**Which two labels:**
+**Which two labels:** `craft_critique` and `fan_theory`
 
-**The decision rule I used every time:**
-<!-- e.g. "If the post names a specific checkable fact, it's `analysis`, even
-     if the tone is heated." -->
+**The decision rule I used every time:** If the post evaluates deliberate filmmaking choices made by real-world creators (directors, actors, screenwriters, editors), it is `craft_critique`. If it treats the movie's fictional universe as a real reality to deduce unstated in-universe lore, character psychology, or unseen events, it is `fan_theory`.
 
 
 
