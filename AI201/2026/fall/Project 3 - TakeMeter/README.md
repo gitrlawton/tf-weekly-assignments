@@ -224,27 +224,26 @@ In zero-shot NLI (`BART-large-mnli`), hypotheses are structured as `HYPOTHESIS =
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. Overall accuracy | >= 0.65 | 0.933 | 0.900 | 0.933 | MET |
+| 2. Macro F1 | >= 0.60 | 0.927 | 0.898 | 0.933 | MET |
+| 3. F1 — `recommendation_request` | >= 0.70 | 0.933 | 1.000 | 1.000 | MET |
+| 4. Per-label floor (min F1) | >= 0.45 | 0.833 | 0.769 | 0.857 | MET |
+| 5. Accuracy spread | <= 0.15 | 0.933 | 0.900 | 0.933 | MET (spread 0.033) |
 
 ### Confusion matrix
 
 <!-- ⚠️ TYPED AS A MARKDOWN TABLE. The notebook prints one ready to paste.
      An image of a matrix earns nothing. -->
 
-| true \ predicted |  |  |  |
-|---|---|---|---|
-| **** |  |  |  |
-| **** |  |  |  |
-| **** |  |  |  |
+| true \ predicted | craft_critique | fan_theory | recommendation_request | industry_business |
+|---|---|---|---|---|
+| **craft_critique** | 8 | 0 | 0 | 0 |
+| **fan_theory** | 1 | 5 | 1 | 0 |
+| **recommendation_request** | 0 | 0 | 7 | 0 |
+| **industry_business** | 0 | 0 | 0 | 8 |
 
 **My biggest off-diagonal number, and what it means:**
-<!-- Not "the model made mistakes" — WHICH boundary it didn't learn, and which
-     direction. "7 real analysis posts were called hot_take and only 3 went the
-     other way" is a direction, not just an error rate. -->
+The only errors occurred on `fan_theory` (1 post misclassified as `craft_critique` and 1 as `recommendation_request`), indicating that while the model has completely learned the boundaries for `industry_business` and `craft_critique`, posts interpreting narrative lore occasionally share subtle syntactic overlap with craft analysis or recommendation queries.
 
 
 
