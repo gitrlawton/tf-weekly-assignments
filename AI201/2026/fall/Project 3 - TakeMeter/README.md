@@ -256,22 +256,18 @@ The only errors occurred on `fan_theory` (1 post misclassified as `craft_critiqu
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | Overall accuracy | >= 0.65 | **MET** | Accuracies were 0.933, 0.900, and 0.933; all three comfortably exceed the 0.65 threshold across all splits. |
+| 2 | Macro F1 | >= 0.60 | **MET** | Macro F1 scores were 0.927, 0.898, and 0.933; all three are well above the 0.60 balance target. |
+| 3 | F1 — `recommendation_request` | >= 0.70 | **MET** | F1 scores were 0.933, 1.000, and 1.000; the interrogative syntactic structure made this easily identifiable across seeds. |
+| 4 | Minimum per-label floor | >= 0.45 | **MET** | The lowest individual F1 across all seeds and labels was 0.769 (`craft_critique` on Seed 7), which remains well above 0.45. |
+| 5 | Seed stability | Spread <= 0.15 | **MET** | Maximum spread across seeds was only 0.033 (0.933 - 0.900), indicating strong stability and no erratic split behavior. |
 
 **Diagnoses**
 
-<!-- For each miss: the cause, and how you know. The four common causes are:
-     too few examples for a label, a boundary you applied inconsistently, a
-     genuinely hard label pair, and a task the model can't reach from this
-     much data.
-
-     ⚠️ Use your agreement report as evidence. It is the only instrument you
-     have that can tell a LABELLING problem from a MODEL problem, and this
-     section is graded on whether you used it that way. -->
+Although all five criteria were MET across all three seeds, the primary area of performance variation was the boundary between `craft_critique` and `fan_theory`:
+- **Observed variation:** In Seed 7, `craft_critique` F1 dropped from 0.941 down to 0.769 because 3 real `craft_critique` posts were predicted as `fan_theory`. Across all three seeds, 5 of the 7 total errors occurred along this exact pair.
+- **Model problem vs. Labelling problem (Agreement Report Evidence):** My agreement check on the staff set was 100% (30/30), demonstrating that I apply decision rules consistently and do not suffer from shifting or sloppy boundary definitions.
+- **Root Cause:** This variation stems from a **genuinely hard boundary** combined with **sample size sensitivity**. In a ~30-sample test split, each class only has 7–8 examples. When a post analyzes character psychology or visual symbolism, the distinction between evaluating an artist's deliberate craft and deducing in-universe lore is subtle. Misclassifying just two borderline posts on an 8-example test split drops recall by 25%, causing the observed F1 dip on Seed 7 without indicating a systemic labeling failure.
 
 
 
