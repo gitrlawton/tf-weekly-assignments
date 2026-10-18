@@ -1,0 +1,190 @@
+{
+  "model": "facebook/bart-large-mnli",
+  "n": 30,
+  "seed": 42,
+  "held_out": true,
+  "used_definitions": false,
+  "scores": {
+    "n": 30,
+    "accuracy": 0.8666666666666667,
+    "f1_macro": 0.8696872979961214,
+    "per_label": {
+      "craft_critique": {
+        "precision": 0.875,
+        "recall": 0.875,
+        "f1": 0.875,
+        "support": 8
+      },
+      "fan_theory": {
+        "precision": 0.7,
+        "recall": 1.0,
+        "f1": 0.8235294117647058,
+        "support": 7
+      },
+      "industry_business": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.8571428571428571,
+        "support": 8
+      },
+      "recommendation_request": {
+        "precision": 1.0,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
+        "support": 7
+      }
+    }
+  },
+  "predictions": [
+    {
+      "text": "A24 expanding into commercial IP and action franchises with Civil War was driven by investor demands following a $225M minority equity sale.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "The editing rhythm in Baby Driver syncs tire screeches, gunshots, and footsteps directly to the rhythm of Edgar Wright's curated soundtrack.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "The rule change requiring Academy Award Best Picture nominees to complete an expanded theatrical run across top 10 markets prevents pure streaming drops.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "The domestic box office crossing $9 billion this year proves theatrical exhibition is stabilizing, but theater chains remain heavily indebted from pandemic loans.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "What are some great psychological horror films that rely on dread and family grief without using jump scares, like Hereditary or The Babadook?",
+      "gold": "recommendation_request",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "Streaming services purging original titles like Willow from their platforms demonstrates how residual payment liabilities affect catalog retention.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "What are the best sports biopics that focus on sports analytics and management strategy rather than on-field heroics, like Moneyball?",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    },
+    {
+      "text": "Looking for surreal psychological mysteries where you can't tell what is real and what is hallucinated, like Jacob's Ladder or Lost Highway.",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    },
+    {
+      "text": "Willy Wonka knew Augustus, Violet, Veruca, and Mike would fail each room because the tour was an elaborate entrapment scheme to legally eliminate them.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "Can someone recommend animated films for adults with mature existential themes, similar to Persepolis and Waltz with Bashir?",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    },
+    {
+      "text": "In Nope, the creature Jean Jacket isn't an alien starship, but an undocumented atmospheric apex predator that evolved alongside earth biology.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "In John Wick, the Continental Hotel network was originally established by medieval Templars, which explains the Latin phrases, gold coins, and ancient blood oaths.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "Colin Stetson's droning saxophone score in Hereditary eschews traditional string crescendos, creating an uncomfortable vibrational dread throughout the house.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "In No Country for Old Men, the absolute absence of a musical score amplifies every boot scrape and wind gust, making Chigurh's pursuit feel inevitable.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "Looking for dark murder mysteries set in freezing, snowbound small towns, like Wind River, Fargo, and Insomnia.",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    },
+    {
+      "text": "The shrinking average theatrical window from 90 days down to roughly 30 to 45 days has accelerated home viewing adoption for non-event dramas.",
+      "gold": "industry_business",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "The color grading in The Matrix, bathing the simulation in sickly fluorescent green while keeping the real world cold and blue, immediately orientates the viewer without exposition.",
+      "gold": "craft_critique",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "The briefcase in Pulp Fiction contains Marcellus Wallace's soul, which explains the gold glow and the bandage on the back of his neck where the devil extracted it.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "The ending of The Mist reveals that the fog dissipated precisely because David sacrificed the four passengers, satisfying an ancient pagan blood pact.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "The SAG-AFTRA and WGA strikes forced studios to delay tentpole release calendars by up to a year, causing a massive content drought for exhibitors.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "Neon continuing to win the Palme d'Or distribution rights at Cannes for five consecutive years cements their status as the premier arthouse distributor.",
+      "gold": "industry_business",
+      "predicted": "industry_business"
+    },
+    {
+      "text": "In Hereditary, the grandmother orchestrated Annie's husband's death years before the movie began to isolate Annie's family for the ritual.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "The sound design in Zone of Interest places the industrial horror entirely off-screen in the audio track while the visual frame remains pristine domestic bliss.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "The jump cuts in Breathless broke classical Hollywood editing conventions by discarding continuity in favor of existential spontaneity.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "Universal's Five Nights at Freddy's grossing $80M domestic in its opening weekend while releasing day-and-date on Peacock proves dedicated fandom transcends distribution models.",
+      "gold": "industry_business",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "In Birdman, Riggan Thomson truly possesses telekinetic powers, and the cynical Broadway critics simply refuse to acknowledge supernatural phenomena.",
+      "gold": "fan_theory",
+      "predicted": "fan_theory"
+    },
+    {
+      "text": "The costume design in Phantom Thread uses increasingly constrictive and tailored wools to reflect Reynolds Woodcock's suffocating emotional control over Alma.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "Can anyone recommend gripping courtroom dramas from foreign cinema, like Anatomy of a Fall or The Accused?",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    },
+    {
+      "text": "Zimmer's ticking stopwatch motif in the Dunkirk score creates relentless acoustic urgency, synchronizing perfectly with the three intersecting timelines.",
+      "gold": "craft_critique",
+      "predicted": "craft_critique"
+    },
+    {
+      "text": "Looking for existential sci-fi movies that deal with human memory, identity, and consciousness, similar to Blade Runner and Eternal Sunshine.",
+      "gold": "recommendation_request",
+      "predicted": "recommendation_request"
+    }
+  ]
+}
