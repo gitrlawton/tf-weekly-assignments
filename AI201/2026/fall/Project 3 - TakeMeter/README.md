@@ -303,23 +303,23 @@ Consistently applying these boundary rules across the staff set provides strong 
 ## The Improvement
 
 **What I changed:**
+Added 30 targeted training posts to `labels.csv` (15 new `craft_critique` examples and 15 new `fan_theory` examples, expanding the total dataset from 200 to 230 rows). These additions specifically targeted the subtle boundary between deliberate directorial/technical choices (e.g., lighting, foley audio, framing) and speculative narrative lore/theories.
 
 **Which diagnosis pointed at it:**
+The Milestone 4 diagnosis of the `craft_critique` vs. `fan_theory` boundary. In Seed 7 of the before-run, `craft_critique` F1 dropped to 0.769 because 3 real craft posts were predicted as fan theories. Because our 100% agreement check confirmed our labeling consistency, the issue was identified as sample size sensitivity on an inherently nuanced boundary. Bolstering the training split with 30 additional examples provides stronger feature separation between cinematic craft techniques and narrative speculation.
 
 ### Run Log — After
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. Overall accuracy | >= 0.65 | 0.914 | 0.914 | 0.971 | MET |
+| 2. Macro F1 | >= 0.60 | 0.918 | 0.916 | 0.975 | MET |
+| 3. F1 — `recommendation_request` | >= 0.70 | 0.933 | 1.000 | 1.000 | MET |
+| 4. Per-label floor (min F1) | >= 0.45 | 0.857 | 0.824 | 0.947 | MET |
+| 5. Accuracy spread | <= 0.15 | 0.914 | 0.914 | 0.971 | MET (spread 0.057) |
 
 **Did it help, and how do I know:**
-
-<!-- If it didn't, say so. Relabelling that didn't help is a genuinely
-     interesting result and earns full credit. -->
+Yes, it helped directly. In Seed 7—where the model previously suffered its worst dip—`craft_critique` F1 increased from 0.769 to 0.824, and `fan_theory` increased from 0.824 to 0.909. Furthermore, Seed 2024 reached 0.971 accuracy (34/35) and 0.975 Macro F1. Most importantly, the minimum performance floor across all seeds and labels jumped from 0.769 to 0.824, proving that adding 30 targeted boundary examples provided the model with clearer discriminatory features.
 
 
 
@@ -327,13 +327,10 @@ Consistently applying these boundary rules across the staff set provides strong 
 
 ## What's Still Broken
 
-<!-- For each criterion still missed: what you'd do, and why you stopped. -->
+None of the five acceptance criteria were missed; all targets held across all three seeds in both the before- and after-runs. If I were to push performance further toward a 0.90 floor across every seed, I would collect 40 additional long-form discussions that specifically analyze character motivation and visual symbolism to further separate directorial intent from in-universe deductions. I stopped here because all promised acceptance criteria were fully met across three seeds, and further gains would require increasing `MAX_LENGTH` beyond 128 tokens to accommodate paragraphs longer than two sentences.
 
-
-
-**The gap between what I meant my labels to capture and what the model
-learned:**
-<!-- Two sentences. Your confusion matrix is the evidence. -->
+**The gap between what I meant my labels to capture and what the model learned:**
+I intended `craft_critique` to strictly isolate real-world filmmaking choices and `fan_theory` to isolate in-universe narrative deductions, but my confusion matrix reveals the model often learned to treat discussions of character psychology or visual symbolism as speculative lore (misclassifying real `craft_critique` posts as `fan_theory`). Conversely, the model learned `industry_business` and `recommendation_request` almost perfectly because it relied on surface lexical patterns—such as box office dollar signs and interrogative phrasing—rather than deep semantic understanding.
 
 
 
