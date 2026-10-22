@@ -201,14 +201,14 @@ The massive +0.674 Macro F1 gap proves that fine-tuning was indispensable for th
 
 Running `baseline.py` with bare label names (`--definitions none`) produced an accuracy of 0.867 and a Macro F1 of 0.870, measuring what the prompt definitions were worth:
 
-| Measure | Baseline (Definitions) | Baseline (Bare Names) | Trained |
-|---|---|---|---|
-| Overall accuracy | 0.333 | 0.867 | 0.933 |
-| Macro F1 | 0.253 | 0.870 | 0.927 |
-| F1 — `craft_critique` | 0.000 | 0.875 | 0.941 |
-| F1 — `fan_theory` | 0.412 | 0.824 | 0.833 |
-| F1 — `industry_business` | 0.000 | 0.857 | 1.000 |
-| F1 — `recommendation_request` | 0.600 | 0.923 | 0.933 |
+| Measure                       | Baseline (Definitions) | Baseline (Bare Names) | Trained |
+|---                            |---                     |---                    |---      |
+| Overall accuracy              | 0.333                  | 0.867                 | 0.933   |
+| Macro F1                      | 0.253                  | 0.870                 | 0.927   |
+| F1 — `craft_critique`         | 0.000                  | 0.875                 | 0.941   |
+| F1 — `fan_theory`             | 0.412                  | 0.824                 | 0.833   |
+| F1 — `industry_business`      | 0.000                  | 0.857                 | 1.000   |
+| F1 — `recommendation_request` | 0.600                  | 0.923                 | 0.933   |
 
 **Why bare names outperformed definitions:**
 In zero-shot NLI (`BART-large-mnli`), hypotheses are structured as `HYPOTHESIS = "This post is {}."`. Lengthy definitions starting with verbs and containing parentheticals/clauses produced ungrammatical, overly restrictive hypotheses (e.g. `"This post is evaluates the technical or artistic execution of a film..."`), causing the zero-shot classifier to doubt entailment. In contrast, bare names like `"craft_critique"` and `"industry_business"` acted as concise, high-level semantic tags that the pre-trained transformer could match cleanly (0.867 accuracy). Still, the fine-tuned model beat both zero-shot configurations across every single metric (0.933 accuracy, 0.927 Macro F1).
