@@ -201,15 +201,21 @@ def ask_pipeline(
     """
     from store import search
     import gate
-    from generate import answer_from_chunks, build_prompt
+    from generate import answer_from_chunks, build_prompt, last_call_tokens
 
+    t_retrieval_start = time.perf_counter()
     results = search(
         question,
         top_k=top_k or config.TOP_K,
         corpus=corpus or config.CORPUS,
         variant=variant,
     )
+    retrieval_ms = (time.perf_counter() - t_retrieval_start) * 1000.0
+
+    t_gate_start = time.perf_counter()
     decision = gate.check(results, threshold=threshold)
+    gate_ms = (time.perf_counter() - t_gate_start) * 1000.0
+
     if on_gate is not None:
         on_gate(decision)
 
@@ -220,6 +226,12 @@ def ask_pipeline(
         "threshold": decision.threshold,
         "sources": [],
         "prompt": None,
+        "timing": {
+            "retrieval_ms": round(retrieval_ms, 2),
+            "gate_ms": round(gate_ms, 2),
+            "generation_ms": 0.0,
+        },
+        "tokens": {"prompt": 0, "output": 0, "total": 0},
     }
 
     if not decision.passed:
@@ -231,7 +243,12 @@ def ask_pipeline(
         on_prompt(prompt)
 
     outcome["prompt"] = prompt
+    t_gen_start = time.perf_counter()
     outcome["answer"] = answer_from_chunks(question, results)
+    generation_ms = (time.perf_counter() - t_gen_start) * 1000.0
+
+    outcome["timing"]["generation_ms"] = round(generation_ms, 2)
+    outcome["tokens"] = last_call_tokens()
     outcome["sources"] = sorted({r.source for r in results})
     return outcome
 

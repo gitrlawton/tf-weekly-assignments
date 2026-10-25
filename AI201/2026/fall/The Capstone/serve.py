@@ -1,82 +1,183 @@
 #!/usr/bin/env python3
 """
-The Unofficial Guide — the same pipeline, over HTTP.
+The Unofficial Guide — Instrumented HTTP Service (Shape A).
 
     python serve.py                          run it locally on port 5000
-    gunicorn serve:app                       run it the way a host runs it
+    gunicorn serve:app --bind 0.0.0.0:5000   run it in production (Linux/POSIX)
 
-Nothing new happens in this file. It is a wrapper: a request comes in, it
-hands the question to `app.py::ask_pipeline` — the exact function the command
-line uses — and hands the answer back as JSON. Retrieval, the relevance gate
-and the grounded prompt all still live where they lived. If you change how
-your system answers, you change it in those files and this one follows.
-
-Two routes:
-
-    POST /ask       {"question": "..."} in, the answer and its sources out
-    GET  /health    is the service up, and is there an index to search
-
-Why this exists: `app.py` runs once and exits, which is fine on your laptop
-and impossible to deploy. A hosted service has to stay up and wait for
-requests. This is the smallest thing that does that.
-
-⚠️ There is deliberately no logging, no timing and no metrics in this file.
-Week 9 has you build the structured log yourself — the request line, the
-timing field everyone skips, the whole instrument-before-you-deploy exercise.
-Shipping a logger here would hand you the answer to that. Add yours in week 9;
-this file stays the bare shell until then.
+Operational Features (Shape A):
+  • Structured single-line JSON logging for every request (logs/requests.jsonl + stdout)
+  • End-to-end and granular stage latency tracking (retrieval_ms, gate_ms, generation_ms)
+  • Per-request token consumption accounting (prompt_tokens, output_tokens)
+  • Traceable Request IDs via UUIDv4 and X-Request-ID response headers
+  • Comprehensive readiness and liveness health checks on GET /health
+  • In-memory aggregated observability metrics on GET /stats
 """
 
 import os
+import time
+import uuid
 
-from flask import Flask, jsonify, request
+from flask import Flask, g, jsonify, request
 
 import config
+from logger import log_request, read_recent_logs
 
 app = Flask(__name__)
+
+# In-memory operational metrics
+_metrics = {
+    "total_requests": 0,
+    "successful_answers": 0,
+    "refused_queries": 0,
+    "errors": 0,
+    "total_latency_ms": 0.0,
+    "total_prompt_tokens": 0,
+    "total_output_tokens": 0,
+}
+
+
+@app.before_request
+def before_request_hook():
+    """Initialize request-scoped tracing context."""
+    g.start_time = time.perf_counter()
+    g.request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    g.log_extra = {
+        "question": None,
+        "refused": False,
+        "best_distance": None,
+        "retrieval_ms": 0.0,
+        "gate_ms": 0.0,
+        "generation_ms": 0.0,
+        "prompt_tokens": 0,
+        "output_tokens": 0,
+        "error": None,
+    }
+
+
+@app.after_request
+def after_request_hook(response):
+    """Record duration, update headers, and emit structured JSON log."""
+    elapsed_ms = (time.perf_counter() - getattr(g, "start_time", time.perf_counter())) * 1000.0
+    elapsed_ms = round(elapsed_ms, 2)
+    request_id = getattr(g, "request_id", str(uuid.uuid4()))
+
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Response-Time-MS"] = str(elapsed_ms)
+
+    extra = getattr(g, "log_extra", {})
+    status_code = response.status_code
+
+    # Update in-memory metrics
+    _metrics["total_requests"] += 1
+    _metrics["total_latency_ms"] += elapsed_ms
+    _metrics["total_prompt_tokens"] += extra.get("prompt_tokens", 0)
+    _metrics["total_output_tokens"] += extra.get("output_tokens", 0)
+
+    if status_code >= 400:
+        _metrics["errors"] += 1
+    elif extra.get("refused", False):
+        _metrics["refused_queries"] += 1
+    else:
+        _metrics["successful_answers"] += 1
+
+    record = {
+        "request_id": request_id,
+        "client_ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+        "endpoint": request.path,
+        "method": request.method,
+        "status_code": status_code,
+        "latency_ms": elapsed_ms,
+        "retrieval_ms": extra.get("retrieval_ms", 0.0),
+        "gate_ms": extra.get("gate_ms", 0.0),
+        "generation_ms": extra.get("generation_ms", 0.0),
+        "question": extra.get("question"),
+        "refused": extra.get("refused", False),
+        "best_distance": extra.get("best_distance"),
+        "prompt_tokens": extra.get("prompt_tokens", 0),
+        "output_tokens": extra.get("output_tokens", 0),
+        "error": extra.get("error"),
+    }
+    log_request(record)
+
+    return response
 
 
 @app.get("/health")
 def health():
-    """Is the service up, and is there an index to search?
+    """Operational readiness and liveness probe.
 
-    Two different questions, and the second one is the one that bites. A
-    freshly deployed service answers this route happily while every /ask
-    returns "no index" — hosts give you no disk that survives a restart, so
-    the index has to be built as part of getting the service up. Checking
-    here means you find that out in one request instead of five.
+    Checks:
+      1. ChromaDB vector index existence and item count
+      2. GEMINI_API_KEY environment presence
     """
-    from store import index_exists
+    from store import index_exists, _client
 
-    ready = index_exists(config.CORPUS)
+    has_index = index_exists(config.CORPUS)
+    doc_count = 0
+    if has_index:
+        try:
+            col = _client().get_collection(config.collection_name(config.CORPUS))
+            doc_count = col.count()
+        except Exception:
+            pass
+
+    has_key = bool(os.getenv("GEMINI_API_KEY", "").strip())
+    ready = has_index and has_key
+
+    status_payload = {
+        "status": "ready" if ready else "not_ready",
+        "corpus": config.CORPUS,
+        "index_ready": has_index,
+        "chunk_count": doc_count,
+        "api_key_configured": has_key,
+        "detail": (
+            "System healthy and ready to answer queries"
+            if ready
+            else (
+                "Index missing — run `python app.py index`"
+                if not has_index
+                else "GEMINI_API_KEY is not set"
+            )
+        ),
+    }
+
+    return jsonify(status_payload), (200 if ready else 503)
+
+
+@app.get("/stats")
+def stats():
+    """Aggregated in-memory operational metrics."""
+    avg_latency = (
+        round(_metrics["total_latency_ms"] / _metrics["total_requests"], 2)
+        if _metrics["total_requests"] > 0
+        else 0.0
+    )
     return jsonify(
         {
-            "status": "ok",
             "corpus": config.CORPUS,
-            "index_ready": ready,
-            "detail": (
-                "ready"
-                if ready
-                else "no index for this corpus — run `python app.py index`"
-            ),
+            "total_requests": _metrics["total_requests"],
+            "successful_answers": _metrics["successful_answers"],
+            "refused_queries": _metrics["refused_queries"],
+            "errors": _metrics["errors"],
+            "average_latency_ms": avg_latency,
+            "total_prompt_tokens": _metrics["total_prompt_tokens"],
+            "total_output_tokens": _metrics["total_output_tokens"],
+            "recent_log_count": len(read_recent_logs(10)),
         }
     )
 
 
 @app.post("/ask")
 def ask():
-    """One question in, one grounded answer out.
-
-    A refused question is a 200, not an error. The gate refusing is your
-    system working — it is an answer, and the JSON says so with
-    `"refused": true` so whatever calls this can tell the two apart.
-    """
+    """One question in, grounded answer with telemetry out."""
     from app import ask_pipeline
 
     payload = request.get_json(silent=True) or {}
     question = (payload.get("question") or "").strip()
 
     if not question:
+        g.log_extra["error"] = "Empty or missing question"
         return (
             jsonify(
                 {
@@ -87,10 +188,24 @@ def ask():
             400,
         )
 
+    g.log_extra["question"] = question
+
     try:
         outcome = ask_pipeline(question, corpus=config.CORPUS)
-    except Exception as exc:  # noqa: BLE001 — a reader gets this, not a traceback
+    except Exception as exc:  # noqa: BLE001
+        g.log_extra["error"] = f"{type(exc).__name__}: {exc}"
         return jsonify({"error": f"{type(exc).__name__}: {exc}"}), 500
+
+    timing = outcome.get("timing", {})
+    tokens = outcome.get("tokens", {})
+
+    g.log_extra["refused"] = outcome["refused"]
+    g.log_extra["best_distance"] = round(outcome["best_distance"], 4)
+    g.log_extra["retrieval_ms"] = timing.get("retrieval_ms", 0.0)
+    g.log_extra["gate_ms"] = timing.get("gate_ms", 0.0)
+    g.log_extra["generation_ms"] = timing.get("generation_ms", 0.0)
+    g.log_extra["prompt_tokens"] = tokens.get("prompt", 0)
+    g.log_extra["output_tokens"] = tokens.get("output", 0)
 
     return jsonify(
         {
@@ -101,28 +216,27 @@ def ask():
             "best_distance": round(outcome["best_distance"], 4),
             "threshold": outcome["threshold"],
             "corpus": config.CORPUS,
+            "timing_ms": {
+                "retrieval": timing.get("retrieval_ms", 0.0),
+                "gate": timing.get("gate_ms", 0.0),
+                "generation": timing.get("generation_ms", 0.0),
+            },
+            "tokens": tokens,
         }
     )
 
 
 def main():
-    # Hosts tell you which port to listen on through PORT, and they expect you
-    # on 0.0.0.0. Binding 127.0.0.1 instead works perfectly on your laptop and
-    # then answers nothing at all once deployed, because the host's router
-    # can't reach a socket that only accepts connections from inside the
-    # container. It is the single most common way a first deploy "succeeds"
-    # and is unreachable.
     port = int(os.getenv("PORT", "5000"))
-
-    # Debug mode reloads on save, which is handy, and prints a console that
-    # runs arbitrary code, which is not something to leave switched on where
-    # strangers can reach it. Off unless you ask for it.
     debug = os.getenv("AI201_DEBUG", "0") == "1"
 
     print(f"Serving The Unofficial Guide on http://localhost:{port}")
     print(f"Corpus: {config.CORPUS}    (Ctrl-C to stop)\n")
-    print("Try it from another terminal:\n")
-    print(f"  curl http://localhost:{port}/health")
+    print("Available Routes:")
+    print(f"  GET  http://localhost:{port}/health")
+    print(f"  GET  http://localhost:{port}/stats")
+    print(f"  POST http://localhost:{port}/ask\n")
+    print("Example cURL test:")
     print(
         f"  curl -X POST http://localhost:{port}/ask \\\n"
         f"    -H 'Content-Type: application/json' \\\n"

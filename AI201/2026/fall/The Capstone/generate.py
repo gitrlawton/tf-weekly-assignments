@@ -39,6 +39,7 @@ _call_times: list[float] = []
 _session_calls = 0
 _session_prompt_tokens = 0
 _session_output_tokens = 0
+_last_call_tokens: dict[str, int] = {"prompt": 0, "output": 0, "total": 0}
 _cache_hits = 0
 _client = None
 _budget_warned = False
@@ -133,16 +134,25 @@ def _record_tokens(response) -> None:
     half-filled on others, and a token count you didn't get is never a good
     enough reason to end someone's run.
     """
-    global _session_prompt_tokens, _session_output_tokens
+    global _session_prompt_tokens, _session_output_tokens, _last_call_tokens
 
     try:
         meta = getattr(response, "usage_metadata", None)
         if meta is None:
+            _last_call_tokens = {"prompt": 0, "output": 0, "total": 0}
             return
-        _session_prompt_tokens += int(getattr(meta, "prompt_token_count", 0) or 0)
-        _session_output_tokens += int(getattr(meta, "candidates_token_count", 0) or 0)
+        p = int(getattr(meta, "prompt_token_count", 0) or 0)
+        c = int(getattr(meta, "candidates_token_count", 0) or 0)
+        _session_prompt_tokens += p
+        _session_output_tokens += c
+        _last_call_tokens = {"prompt": p, "output": c, "total": p + c}
     except Exception:
         pass  # accounting never breaks the thing it is accounting for
+
+
+def last_call_tokens() -> dict[str, int]:
+    """Tokens used in the most recent model call."""
+    return dict(_last_call_tokens)
 
 
 def usage() -> str:
@@ -212,7 +222,7 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
     Every call in this course goes through here. If you need to change how the
     model is called, change it in this one place.
     """
-    global _session_calls, _cache_hits
+    global _session_calls, _cache_hits, _last_call_tokens
 
     use_cache = cache and config.CACHE_ENABLED
     key = _cache_key(prompt, system)
@@ -221,6 +231,7 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
         hit = _cache_read(key)
         if hit is not None:
             _cache_hits += 1
+            _last_call_tokens = {"prompt": 0, "output": 0, "total": 0}
             return hit
 
     _check_budget()
