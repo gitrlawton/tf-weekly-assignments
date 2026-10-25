@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The Unofficial Guide — Instrumented HTTP Service (Shape A).
+The Unofficial Guide — Resilient & Observable HTTP Service (Shape A + B).
 
     python serve.py                          run it locally on port 5000
     gunicorn serve:app --bind 0.0.0.0:5000   run it in production (Linux/POSIX)
@@ -12,6 +12,13 @@ Operational Features (Shape A):
   • Traceable Request IDs via UUIDv4 and X-Request-ID response headers
   • Comprehensive readiness and liveness health checks on GET /health
   • In-memory aggregated observability metrics on GET /stats
+
+Hardening & Resilience Features (Shape B):
+  • Inbound payload validation & boundary defense (400 Bad Request on empty, malformed, or >1000 char queries)
+  • Vector store unreachability interception (503 Service Unavailable with remediation guidance)
+  • Upstream model timeout protection & graceful degradation (returning retrieved excerpts on Gemini outage)
+  • Deterministic fault simulation headers (X-Simulate-Fault, X-Fail-Strict) for automated evaluation
+  • Machine-readable standardized JSON error envelopes
 """
 
 import os
@@ -21,6 +28,13 @@ import uuid
 from flask import Flask, g, jsonify, request
 
 import config
+from exceptions import (
+    CapstoneError,
+    PayloadValidationError,
+    UpstreamModelTimeoutError,
+    VectorStoreUnavailableError,
+    make_error_envelope,
+)
 from logger import log_request, read_recent_logs
 
 app = Flask(__name__)
@@ -30,6 +44,7 @@ _metrics = {
     "total_requests": 0,
     "successful_answers": 0,
     "refused_queries": 0,
+    "degraded_answers": 0,
     "errors": 0,
     "total_latency_ms": 0.0,
     "total_prompt_tokens": 0,
@@ -45,6 +60,7 @@ def before_request_hook():
     g.log_extra = {
         "question": None,
         "refused": False,
+        "degraded": False,
         "best_distance": None,
         "retrieval_ms": 0.0,
         "gate_ms": 0.0,
@@ -76,6 +92,8 @@ def after_request_hook(response):
 
     if status_code >= 400:
         _metrics["errors"] += 1
+    elif extra.get("degraded", False):
+        _metrics["degraded_answers"] += 1
     elif extra.get("refused", False):
         _metrics["refused_queries"] += 1
     else:
@@ -93,6 +111,7 @@ def after_request_hook(response):
         "generation_ms": extra.get("generation_ms", 0.0),
         "question": extra.get("question"),
         "refused": extra.get("refused", False),
+        "degraded": extra.get("degraded", False),
         "best_distance": extra.get("best_distance"),
         "prompt_tokens": extra.get("prompt_tokens", 0),
         "output_tokens": extra.get("output_tokens", 0),
@@ -103,14 +122,87 @@ def after_request_hook(response):
     return response
 
 
+# ─── Error Handlers (Shape B Middleware) ──────────────────────────────────────
+
+
+@app.errorhandler(PayloadValidationError)
+def handle_payload_validation_error(exc: PayloadValidationError):
+    """Client input error (400 Bad Request)."""
+    req_id = getattr(g, "request_id", None)
+    g.log_extra["error"] = f"{exc.code}: {exc.message}"
+    envelope = make_error_envelope(
+        error="Bad Request",
+        message=exc.message,
+        code=exc.code,
+        status_code=400,
+        request_id=req_id,
+    )
+    return jsonify(envelope), 400
+
+
+@app.errorhandler(VectorStoreUnavailableError)
+def handle_vector_store_error(exc: VectorStoreUnavailableError):
+    """Vector database unavailable or unindexed (503 Service Unavailable)."""
+    req_id = getattr(g, "request_id", None)
+    g.log_extra["error"] = f"{exc.code}: {exc.message}"
+    envelope = make_error_envelope(
+        error="Service Unavailable",
+        message=exc.message,
+        code=exc.code,
+        status_code=503,
+        request_id=req_id,
+    )
+    return jsonify(envelope), 503
+
+
+@app.errorhandler(UpstreamModelTimeoutError)
+def handle_timeout_error(exc: UpstreamModelTimeoutError):
+    """Generative AI timeout when strict failure mode is enabled (504 Gateway Timeout)."""
+    req_id = getattr(g, "request_id", None)
+    g.log_extra["error"] = f"{exc.code}: {exc.message}"
+    envelope = make_error_envelope(
+        error="Gateway Timeout",
+        message=exc.message,
+        code=exc.code,
+        status_code=504,
+        request_id=req_id,
+    )
+    return jsonify(envelope), 504
+
+
+@app.errorhandler(CapstoneError)
+def handle_generic_capstone_error(exc: CapstoneError):
+    req_id = getattr(g, "request_id", None)
+    g.log_extra["error"] = f"{exc.code}: {exc.message}"
+    envelope = make_error_envelope(
+        error="Internal Server Error",
+        message=exc.message,
+        code=exc.code,
+        status_code=exc.status_code,
+        request_id=req_id,
+    )
+    return jsonify(envelope), exc.status_code
+
+
+@app.errorhandler(404)
+def handle_not_found(exc):
+    req_id = getattr(g, "request_id", None)
+    envelope = make_error_envelope(
+        error="Not Found",
+        message=f"Endpoint '{request.path}' does not exist on this server.",
+        code="ENDPOINT_NOT_FOUND",
+        status_code=404,
+        request_id=req_id,
+    )
+    return jsonify(envelope), 404
+
+
+# ─── Endpoints ───────────────────────────────────────────────────────────────
+
+
 @app.get("/health")
 def health():
-    """Operational readiness and liveness probe.
-
-    Checks:
-      1. ChromaDB vector index existence and item count
-      2. GEMINI_API_KEY environment presence
-    """
+    """Operational readiness and liveness probe."""
     from store import index_exists, _client
 
     has_index = index_exists(config.CORPUS)
@@ -159,6 +251,7 @@ def stats():
             "total_requests": _metrics["total_requests"],
             "successful_answers": _metrics["successful_answers"],
             "refused_queries": _metrics["refused_queries"],
+            "degraded_answers": _metrics["degraded_answers"],
             "errors": _metrics["errors"],
             "average_latency_ms": avg_latency,
             "total_prompt_tokens": _metrics["total_prompt_tokens"],
@@ -170,48 +263,113 @@ def stats():
 
 @app.post("/ask")
 def ask():
-    """One question in, grounded answer with telemetry out."""
+    """One question in, resilient answer with telemetry out."""
     from app import ask_pipeline
+    from store import index_exists
 
-    payload = request.get_json(silent=True) or {}
-    question = (payload.get("question") or "").strip()
+    # 1. Input Validation & Boundary Defense (Shape B)
+    if not request.is_json:
+        raise PayloadValidationError(
+            "Request Content-Type must be 'application/json' with a valid JSON body.",
+            code="INVALID_CONTENT_TYPE",
+        )
 
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        raise PayloadValidationError(
+            "Request payload must be a JSON object containing a 'question' key.",
+            code="INVALID_PAYLOAD_STRUCTURE",
+        )
+
+    if "question" not in payload:
+        raise PayloadValidationError(
+            "Missing required field 'question' in request body.",
+            code="MISSING_QUESTION_FIELD",
+        )
+
+    raw_question = payload.get("question")
+    if not isinstance(raw_question, str):
+        raise PayloadValidationError(
+            f"Field 'question' must be a string, got {type(raw_question).__name__}.",
+            code="INVALID_QUESTION_TYPE",
+        )
+
+    question = raw_question.strip()
     if not question:
-        g.log_extra["error"] = "Empty or missing question"
-        return (
-            jsonify(
-                {
-                    "error": "Send JSON with a question in it, like "
-                    '{"question": "is the housing lottery random?"}'
-                }
-            ),
-            400,
+        raise PayloadValidationError(
+            "Question cannot be empty or whitespace only.",
+            code="EMPTY_QUESTION",
+        )
+
+    MAX_QUESTION_LENGTH = 1000
+    if len(question) > MAX_QUESTION_LENGTH:
+        raise PayloadValidationError(
+            f"Question exceeds maximum allowed length of {MAX_QUESTION_LENGTH} characters (received {len(question)}).",
+            code="PAYLOAD_TOO_LARGE",
         )
 
     g.log_extra["question"] = question
 
+    # 2. Vector Store Readiness Guard (Shape B)
+    if not index_exists(config.CORPUS):
+        raise VectorStoreUnavailableError(
+            f"Vector index for corpus '{config.CORPUS}' is uninitialized or missing. "
+            f"Run `python app.py index` to build the collection."
+        )
+
+    # 3. Deterministic Fault-Injection Simulation (For Testing / Milestone 5)
+    sim_fault = (request.headers.get("X-Simulate-Fault") or "").strip().lower()
+    fail_strict = (
+        request.headers.get("X-Fail-Strict", "").strip().lower() in ("1", "true", "yes")
+    )
+
+    if sim_fault == "index_error":
+        raise VectorStoreUnavailableError("Simulated vector index corruption or unreachability.")
+    elif sim_fault == "timeout" and fail_strict:
+        raise UpstreamModelTimeoutError("Simulated upstream Gemini API timeout (strict mode).")
+
+    # 4. Pipeline Execution with Graceful Fallback
     try:
-        outcome = ask_pipeline(question, corpus=config.CORPUS)
+        outcome = ask_pipeline(
+            question,
+            corpus=config.CORPUS,
+            fallback_degradation=not fail_strict,
+            timeout=0.0001 if sim_fault == "timeout" else None,
+        )
+    except UpstreamModelTimeoutError as exc:
+        raise exc
     except Exception as exc:  # noqa: BLE001
         g.log_extra["error"] = f"{type(exc).__name__}: {exc}"
-        return jsonify({"error": f"{type(exc).__name__}: {exc}"}), 500
+        envelope = make_error_envelope(
+            error="Internal Server Error",
+            message=f"{type(exc).__name__}: {exc}",
+            code="PIPELINE_ERROR",
+            status_code=500,
+            request_id=getattr(g, "request_id", None),
+        )
+        return jsonify(envelope), 500
 
     timing = outcome.get("timing", {})
     tokens = outcome.get("tokens", {})
 
     g.log_extra["refused"] = outcome["refused"]
+    g.log_extra["degraded"] = outcome.get("degraded", False)
     g.log_extra["best_distance"] = round(outcome["best_distance"], 4)
     g.log_extra["retrieval_ms"] = timing.get("retrieval_ms", 0.0)
     g.log_extra["gate_ms"] = timing.get("gate_ms", 0.0)
     g.log_extra["generation_ms"] = timing.get("generation_ms", 0.0)
     g.log_extra["prompt_tokens"] = tokens.get("prompt", 0)
     g.log_extra["output_tokens"] = tokens.get("output", 0)
+    if outcome.get("degraded"):
+        g.log_extra["error"] = outcome.get("error_detail")
 
     return jsonify(
         {
             "question": question,
             "answer": outcome["answer"],
             "refused": outcome["refused"],
+            "degraded": outcome.get("degraded", False),
+            "error_detail": outcome.get("error_detail"),
             "sources": outcome["sources"],
             "best_distance": round(outcome["best_distance"], 4),
             "threshold": outcome["threshold"],
@@ -236,12 +394,6 @@ def main():
     print(f"  GET  http://localhost:{port}/health")
     print(f"  GET  http://localhost:{port}/stats")
     print(f"  POST http://localhost:{port}/ask\n")
-    print("Example cURL test:")
-    print(
-        f"  curl -X POST http://localhost:{port}/ask \\\n"
-        f"    -H 'Content-Type: application/json' \\\n"
-        f"    -d '{{\"question\": \"is the housing lottery random?\"}}'\n"
-    )
 
     app.run(host="0.0.0.0", port=port, debug=debug)
 

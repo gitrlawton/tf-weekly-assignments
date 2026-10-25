@@ -118,3 +118,24 @@ python tools/eval_http.py --url http://localhost:5000 --runs 3
 ```
 
 All requests automatically stream to console stdout and append machine-readable JSON records to `logs/requests.jsonl`.
+
+---
+
+## 6. Testing Failure Scenarios & Bad Paths (Shape B)
+
+The service includes an automated multi-trial fault-testing suite to verify bad-path resilience without altering code between runs:
+
+```bash
+python tools/eval_faults.py --url http://localhost:5000 --trials 3
+```
+
+### Tested Failure Surfaces:
+| Scenario | Trigger / Payload | Expected Status | Error / Behavior Code |
+|---|---|---|---|
+| **Oversized Query** | Query text > 1,000 characters | `400 Bad Request` | `PAYLOAD_TOO_LARGE` |
+| **Empty Query** | Missing question or whitespace only | `400 Bad Request` | `EMPTY_QUESTION` |
+| **Non-JSON Payload** | Bad `Content-Type` / unparseable body | `400 Bad Request` | `INVALID_CONTENT_TYPE` |
+| **Missing Index** | Header `X-Simulate-Fault: index_error` | `503 Service Unavailable` | `INDEX_UNAVAILABLE` |
+| **Upstream Timeout (Graceful)** | Header `X-Simulate-Fault: timeout` | `200 OK (Degraded)` | Returns raw excerpts + notice |
+| **Upstream Timeout (Strict)** | Headers `X-Simulate-Fault: timeout` & `X-Fail-Strict: true` | `504 Gateway Timeout` | `UPSTREAM_TIMEOUT` |
+

@@ -183,6 +183,8 @@ def ask_pipeline(
     threshold=None,
     on_gate=None,
     on_prompt=None,
+    fallback_degradation: bool = True,
+    timeout: float | None = None,
 ):
     """Retrieve, gate, answer. Returns the outcome and prints nothing.
 
@@ -222,6 +224,8 @@ def ask_pipeline(
     outcome = {
         "question": question,
         "refused": not decision.passed,
+        "degraded": False,
+        "error_detail": None,
         "best_distance": decision.best_distance,
         "threshold": decision.threshold,
         "sources": [],
@@ -244,7 +248,16 @@ def ask_pipeline(
 
     outcome["prompt"] = prompt
     t_gen_start = time.perf_counter()
-    outcome["answer"] = answer_from_chunks(question, results)
+    try:
+        outcome["answer"] = answer_from_chunks(question, results, timeout=timeout)
+    except Exception as exc:
+        if fallback_degradation:
+            from generate import format_degraded_fallback
+            outcome["answer"] = format_degraded_fallback(results)
+            outcome["degraded"] = True
+            outcome["error_detail"] = f"{type(exc).__name__}: {exc}"
+        else:
+            raise
     generation_ms = (time.perf_counter() - t_gen_start) * 1000.0
 
     outcome["timing"]["generation_ms"] = round(generation_ms, 2)

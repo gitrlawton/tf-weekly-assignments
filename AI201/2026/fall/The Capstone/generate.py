@@ -27,6 +27,7 @@ needs three real answers to the same question, not one answer three times over.
 `run_eval.py` passes cache=False for you.
 """
 
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -34,6 +35,9 @@ import sys
 import time
 
 import config
+from exceptions import UpstreamModelTimeoutError
+
+GENERATE_TIMEOUT = float(os.getenv("AI201_GENERATE_TIMEOUT", "10.0"))
 
 _call_times: list[float] = []
 _session_calls = 0
@@ -208,7 +212,12 @@ def _get_client():
     return _client
 
 
-def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
+def generate(
+    prompt: str,
+    system: str | None = None,
+    cache: bool = True,
+    timeout: float | None = None,
+) -> str:
     """
     Send a prompt and get text back.
 
@@ -218,6 +227,7 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
         cache:  reuse an identical earlier answer if there is one. Leave this
                 True while building. Pass False when you're evaluating — three
                 runs of the same question have to be three real answers.
+        timeout: maximum duration in seconds before raising UpstreamModelTimeoutError.
 
     Every call in this course goes through here. If you need to change how the
     model is called, change it in this one place.
@@ -248,7 +258,16 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
             if system:
                 kwargs["config"] = {"system_instruction": system}
 
-            response = client.models.generate_content(**kwargs)
+            req_timeout = timeout or GENERATE_TIMEOUT
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(client.models.generate_content, **kwargs)
+                try:
+                    response = future.result(timeout=req_timeout)
+                except concurrent.futures.TimeoutError as exc:
+                    raise UpstreamModelTimeoutError(
+                        f"Gemini API request timed out after {req_timeout:.1f}s"
+                    ) from exc
+
             _record_tokens(response)
             text = (response.text or "").strip()
 
@@ -258,6 +277,8 @@ def generate(prompt: str, system: str | None = None, cache: bool = True) -> str:
 
         except Exception as exc:  # noqa: BLE001 — surfaced below
             last_error = exc
+            if isinstance(exc, (UpstreamModelTimeoutError, QuotaGuard)):
+                raise
             message = str(exc).lower()
             rate_limited = (
                 "429" in message
@@ -311,7 +332,24 @@ def build_prompt(question: str, results) -> str:
     )
 
 
-def answer_from_chunks(question: str, results, cache: bool = True) -> str:
+def format_degraded_fallback(results) -> str:
+    """Format raw retrieved excerpts when the generator is unavailable or times out."""
+    excerpts = "\n\n".join(
+        f"[from {r.source}]\n{r.text.strip()}" for r in results[:3]
+    )
+    return (
+        "[NOTICE: AI model temporarily unavailable or timed out. "
+        "Showing retrieved student advice excerpts below:]\n\n"
+        f"{excerpts}"
+    )
+
+
+def answer_from_chunks(
+    question: str,
+    results,
+    cache: bool = True,
+    timeout: float | None = None,
+) -> str:
     """
     Build a grounded prompt out of retrieved chunks and send it.
 
@@ -320,4 +358,4 @@ def answer_from_chunks(question: str, results, cache: bool = True) -> str:
     answering from.
     """
     prompt = build_prompt(question, results)
-    return generate(prompt, system=GROUNDING_INSTRUCTION, cache=cache)
+    return generate(prompt, system=GROUNDING_INSTRUCTION, cache=cache, timeout=timeout)
