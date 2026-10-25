@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The Unofficial Guide — Resilient & Observable HTTP Service (Shape A + B).
+The Unofficial Guide — Resilient & Observable HTTP Service (Shape A + B + C).
 
     python serve.py                          run it locally on port 5000
     gunicorn serve:app --bind 0.0.0.0:5000   run it in production (Linux/POSIX)
@@ -19,6 +19,11 @@ Hardening & Resilience Features (Shape B):
   • Upstream model timeout protection & graceful degradation (returning retrieved excerpts on Gemini outage)
   • Deterministic fault simulation headers (X-Simulate-Fault, X-Fail-Strict) for automated evaluation
   • Machine-readable standardized JSON error envelopes
+
+Capability Enhancement (Shape C):
+  • Hybrid Retrieval combining BM25 keyword matching with Chroma vector semantic search
+  • Reciprocal Rank Fusion (RRF) combining dense & sparse scores with tunable k_rrf parameter
+  • Request-level feature toggle ("hybrid": true) on POST /ask
 """
 
 import os
@@ -45,6 +50,7 @@ _metrics = {
     "successful_answers": 0,
     "refused_queries": 0,
     "degraded_answers": 0,
+    "hybrid_queries": 0,
     "errors": 0,
     "total_latency_ms": 0.0,
     "total_prompt_tokens": 0,
@@ -61,6 +67,8 @@ def before_request_hook():
         "question": None,
         "refused": False,
         "degraded": False,
+        "hybrid": False,
+        "rrf_score": None,
         "best_distance": None,
         "retrieval_ms": 0.0,
         "gate_ms": 0.0,
@@ -90,6 +98,9 @@ def after_request_hook(response):
     _metrics["total_prompt_tokens"] += extra.get("prompt_tokens", 0)
     _metrics["total_output_tokens"] += extra.get("output_tokens", 0)
 
+    if extra.get("hybrid", False):
+        _metrics["hybrid_queries"] += 1
+
     if status_code >= 400:
         _metrics["errors"] += 1
     elif extra.get("degraded", False):
@@ -112,6 +123,8 @@ def after_request_hook(response):
         "question": extra.get("question"),
         "refused": extra.get("refused", False),
         "degraded": extra.get("degraded", False),
+        "hybrid": extra.get("hybrid", False),
+        "rrf_score": extra.get("rrf_score"),
         "best_distance": extra.get("best_distance"),
         "prompt_tokens": extra.get("prompt_tokens", 0),
         "output_tokens": extra.get("output_tokens", 0),
@@ -252,6 +265,7 @@ def stats():
             "successful_answers": _metrics["successful_answers"],
             "refused_queries": _metrics["refused_queries"],
             "degraded_answers": _metrics["degraded_answers"],
+            "hybrid_queries": _metrics["hybrid_queries"],
             "errors": _metrics["errors"],
             "average_latency_ms": avg_latency,
             "total_prompt_tokens": _metrics["total_prompt_tokens"],
@@ -308,7 +322,11 @@ def ask():
             code="PAYLOAD_TOO_LARGE",
         )
 
+    # Shape C capability toggle
+    hybrid = bool(payload.get("hybrid", False))
+
     g.log_extra["question"] = question
+    g.log_extra["hybrid"] = hybrid
 
     # 2. Vector Store Readiness Guard (Shape B)
     if not index_exists(config.CORPUS):
@@ -333,6 +351,7 @@ def ask():
         outcome = ask_pipeline(
             question,
             corpus=config.CORPUS,
+            hybrid=hybrid,
             fallback_degradation=not fail_strict,
             timeout=0.0001 if sim_fault == "timeout" else None,
         )
@@ -354,6 +373,8 @@ def ask():
 
     g.log_extra["refused"] = outcome["refused"]
     g.log_extra["degraded"] = outcome.get("degraded", False)
+    g.log_extra["hybrid"] = outcome.get("hybrid", False)
+    g.log_extra["rrf_score"] = outcome.get("rrf_score")
     g.log_extra["best_distance"] = round(outcome["best_distance"], 4)
     g.log_extra["retrieval_ms"] = timing.get("retrieval_ms", 0.0)
     g.log_extra["gate_ms"] = timing.get("gate_ms", 0.0)
@@ -369,6 +390,8 @@ def ask():
             "answer": outcome["answer"],
             "refused": outcome["refused"],
             "degraded": outcome.get("degraded", False),
+            "hybrid": outcome.get("hybrid", False),
+            "rrf_score": outcome.get("rrf_score"),
             "error_detail": outcome.get("error_detail"),
             "sources": outcome["sources"],
             "best_distance": round(outcome["best_distance"], 4),

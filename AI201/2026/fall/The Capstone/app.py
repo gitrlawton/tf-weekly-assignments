@@ -146,26 +146,45 @@ def cmd_chunks(args):
 
 def cmd_retrieve(args):
     """Milestone 4. Retrieval only, with distances, and no model call."""
-    from store import search
     import gate
 
-    results = search(
-        args.question,
-        top_k=args.top_k or config.TOP_K,
-        corpus=args.corpus or config.CORPUS,
-        variant=args.variant,
-    )
+    is_hybrid = getattr(args, "hybrid", False)
+    if is_hybrid:
+        from hybrid import hybrid_search
+        results, timings = hybrid_search(
+            args.question,
+            top_k=args.top_k or config.TOP_K,
+            corpus=args.corpus or config.CORPUS,
+            variant=args.variant,
+        )
+    else:
+        from store import search
+        results = search(
+            args.question,
+            top_k=args.top_k or config.TOP_K,
+            corpus=args.corpus or config.CORPUS,
+            variant=args.variant,
+        )
 
     if not results:
         print("Nothing came back. Have you run `python app.py index`?")
         return
 
-    print(f"\nQuestion: {args.question}\n")
-    print(f"{'#':<3} {'distance':<10} {'source':<32} preview")
-    print("-" * 100)
-    for i, r in enumerate(results, 1):
-        preview = r.text[:52].replace("\n", " ")
-        print(f"{i:<3} {r.distance:<10.4f} {r.source:<32} {preview}...")
+    mode_str = "Hybrid (BM25 + Dense RRF)" if is_hybrid else "Dense Vector"
+    print(f"\nQuestion: {args.question} [{mode_str}]\n")
+    if is_hybrid:
+        print(f"{'#':<3} {'rrf_score':<10} {'distance':<10} {'source':<32} preview")
+        print("-" * 105)
+        for i, r in enumerate(results, 1):
+            preview = r.text[:52].replace("\n", " ")
+            rrf = getattr(r, "rrf_score", 0.0)
+            print(f"{i:<3} {rrf:<10.4f} {r.distance:<10.4f} {r.source:<32} {preview}...")
+    else:
+        print(f"{'#':<3} {'distance':<10} {'source':<32} preview")
+        print("-" * 100)
+        for i, r in enumerate(results, 1):
+            preview = r.text[:52].replace("\n", " ")
+            print(f"{i:<3} {r.distance:<10.4f} {r.source:<32} {preview}...")
 
     decision = gate.check(results)
     print(f"\nGate: {decision.explanation}")
@@ -185,6 +204,7 @@ def ask_pipeline(
     on_prompt=None,
     fallback_degradation: bool = True,
     timeout: float | None = None,
+    hybrid: bool = False,
 ):
     """Retrieve, gate, answer. Returns the outcome and prints nothing.
 
@@ -201,18 +221,28 @@ def ask_pipeline(
     prompt just before it goes out — that's how `--show-prompt` shows you the
     prompt while the model is still thinking rather than after.
     """
-    from store import search
     import gate
     from generate import answer_from_chunks, build_prompt, last_call_tokens
 
     t_retrieval_start = time.perf_counter()
-    results = search(
-        question,
-        top_k=top_k or config.TOP_K,
-        corpus=corpus or config.CORPUS,
-        variant=variant,
-    )
-    retrieval_ms = (time.perf_counter() - t_retrieval_start) * 1000.0
+    if hybrid:
+        from hybrid import hybrid_search
+        results, hybrid_timings = hybrid_search(
+            question,
+            top_k=top_k or config.TOP_K,
+            corpus=corpus or config.CORPUS,
+            variant=variant,
+        )
+        retrieval_ms = (time.perf_counter() - t_retrieval_start) * 1000.0
+    else:
+        from store import search
+        results = search(
+            question,
+            top_k=top_k or config.TOP_K,
+            corpus=corpus or config.CORPUS,
+            variant=variant,
+        )
+        retrieval_ms = (time.perf_counter() - t_retrieval_start) * 1000.0
 
     t_gate_start = time.perf_counter()
     decision = gate.check(results, threshold=threshold)
@@ -221,11 +251,19 @@ def ask_pipeline(
     if on_gate is not None:
         on_gate(decision)
 
+    best_rrf = (
+        max((getattr(r, "rrf_score", 0.0) for r in results), default=0.0)
+        if hybrid
+        else None
+    )
+
     outcome = {
         "question": question,
         "refused": not decision.passed,
         "degraded": False,
         "error_detail": None,
+        "hybrid": hybrid,
+        "rrf_score": round(best_rrf, 5) if best_rrf is not None else None,
         "best_distance": decision.best_distance,
         "threshold": decision.threshold,
         "sources": [],
@@ -274,6 +312,7 @@ def _ask_one(
     threshold,
     show_distances=True,
     show_prompt=False,
+    hybrid=False,
 ):
     import gate
     from generate import GROUNDING_INSTRUCTION
@@ -301,11 +340,15 @@ def _ask_one(
         threshold=threshold,
         on_gate=print_distances if show_distances else None,
         on_prompt=print_prompt if show_prompt else None,
+        hybrid=hybrid,
     )
 
     if outcome["refused"]:
         print(f"\n{gate.REFUSAL}\n")
         return gate.REFUSAL
+
+    if outcome.get("hybrid") and outcome.get("rrf_score"):
+        print(f"  [hybrid search active — best RRF score: {outcome['rrf_score']}]")
 
     print(f"\n{outcome['answer']}\n")
     print(f"Sources retrieved: {', '.join(outcome['sources'])}\n")
@@ -316,6 +359,8 @@ def cmd_ask(args):
     corpus = args.corpus or config.CORPUS
     import generate as gen
 
+    is_hybrid = getattr(args, "hybrid", False)
+
     try:
         if args.question:
             _ask_one(
@@ -325,6 +370,7 @@ def cmd_ask(args):
                 args.top_k,
                 args.threshold,
                 show_prompt=args.show_prompt,
+                hybrid=is_hybrid,
             )
         else:
             print("Ask a question, or press Enter on an empty line to quit.\n")
@@ -343,6 +389,7 @@ def cmd_ask(args):
                     args.top_k,
                     args.threshold,
                     show_prompt=args.show_prompt,
+                    hybrid=is_hybrid,
                 )
     finally:
         print(gen.usage())
@@ -390,6 +437,7 @@ def build_parser():
     p_ret = sub.add_parser("retrieve", help="show distances only (Milestone 4)")
     p_ret.add_argument("question")
     p_ret.add_argument("--top-k", type=int)
+    p_ret.add_argument("--hybrid", action="store_true", help="use hybrid BM25 + dense retrieval")
     p_ret.set_defaults(func=cmd_retrieve)
 
     p_ask = sub.add_parser("ask", help="ask a question")
@@ -401,6 +449,7 @@ def build_parser():
         action="store_true",
         help="print the assembled prompt before the answer",
     )
+    p_ask.add_argument("--hybrid", action="store_true", help="use hybrid BM25 + dense retrieval")
     p_ask.set_defaults(func=cmd_ask)
 
     return parser

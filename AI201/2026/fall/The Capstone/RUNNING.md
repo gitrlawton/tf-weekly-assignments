@@ -139,3 +139,51 @@ python tools/eval_faults.py --url http://localhost:5000 --trials 3
 | **Upstream Timeout (Graceful)** | Header `X-Simulate-Fault: timeout` | `200 OK (Degraded)` | Returns raw excerpts + notice |
 | **Upstream Timeout (Strict)** | Headers `X-Simulate-Fault: timeout` & `X-Fail-Strict: true` | `504 Gateway Timeout` | `UPSTREAM_TIMEOUT` |
 
+---
+
+## 7. Hybrid Retrieval (BM25 Lexical + Chroma Dense — Shape C)
+
+Shape C introduces Hybrid Retrieval combining exact lexical matching (`BM25Okapi`) with dense vector semantic search (`ChromaDB`), merged using Reciprocal Rank Fusion (RRF with `k_rrf = 60`).
+
+### Running via CLI
+To query or retrieve with hybrid search from the terminal:
+```bash
+# Query pipeline with hybrid retrieval
+python app.py ask "How much RAM do I need for CS courses?" --hybrid
+
+# Chunks and rankings retrieval only
+python app.py retrieve "How much RAM do I need for CS courses?" --hybrid
+```
+
+### Running via HTTP API
+Toggle hybrid search per-request using the `"hybrid": true` JSON payload parameter:
+```bash
+curl -X POST http://localhost:5000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How much RAM do I need for CS courses?", "hybrid": true}'
+```
+
+The response JSON will contain hybrid search metadata:
+```json
+{
+  "question": "How much RAM do I need for CS courses?",
+  "answer": "According to thread_laptop_specs.txt, 16GB of RAM is the recommended amount...",
+  "hybrid": true,
+  "rrf_score": 0.03279,
+  "best_distance": 0.257,
+  "threshold": 0.6,
+  "timing_ms": {
+    "retrieval": 44.58,
+    "gate": 0.01,
+    "generation": 774.0
+  }
+}
+```
+
+### Comparative Evaluation Suite
+To execute an automated side-by-side benchmark comparing Dense vs. Hybrid retrieval:
+```bash
+python tools/eval_hybrid.py --url http://localhost:5000
+```
+This tests in-scope questions, out-of-scope gate refusals, and term-specific keyword queries, calculating top-1 agreement rates, retrieval latency overhead, and incrementing `/stats` hybrid query telemetry.
+
