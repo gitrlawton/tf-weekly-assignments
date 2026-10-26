@@ -324,6 +324,7 @@ def ask():
 
     # Shape C capability toggle
     hybrid = bool(payload.get("hybrid", False))
+    cache = bool(payload.get("cache", True))
 
     g.log_extra["question"] = question
     g.log_extra["hybrid"] = hybrid
@@ -352,6 +353,7 @@ def ask():
             question,
             corpus=config.CORPUS,
             hybrid=hybrid,
+            cache=cache,
             fallback_degradation=not fail_strict,
             timeout=0.0001 if sim_fault == "timeout" else None,
         )

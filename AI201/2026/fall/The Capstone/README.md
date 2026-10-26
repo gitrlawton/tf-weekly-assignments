@@ -101,14 +101,37 @@ The following 12 structured JSON log records were generated during a live HTTP e
 
 ## What It Costs
 
-*(To be measured across 10 non-cached evaluation queries in Milestone 3 & Milestone 7)*
+Cost was measured empirically across **10 non-cached queries** covering 10 distinct topics from the `advice_threads` corpus using `tools/measure_cost.py`. Prompts and responses were evaluated with caching disabled (`cache=False`), capturing actual token counts returned by Google Gemini API metadata and timing local stage execution (retrieval vs. generation).
 
-- **Average Latency per Run:** TBD ms
-- **Average Prompt Tokens:** TBD tokens
-- **Average Output Tokens:** TBD tokens
-- **Measured Cost per Run:** $TBD
-- **100 Queries / Day Arithmetic:**
-  - `100 queries * $cost_per_query = $total_per_day`
+### Measurement Summary (10 Non-Cached Runs)
+
+- **Average Latency per Run:** 1,407.33 ms (Retrieval: 140.54 ms, Generation: 1,027.56 ms)
+- **Average Prompt Tokens:** 937.3 tokens
+- **Average Output Tokens:** 40.7 tokens
+- **Average Total Tokens:** 978.0 tokens
+- **Pricing Basis:** Google Gemini Developer API ($0.075 / 1M prompt tokens, $0.30 / 1M output tokens)
+- **Measured Cost per Run:** **$0.000083 USD** (~$0.083 per 1,000 queries)
+
+### 100 Queries / Day Arithmetic
+- **Daily Token Volume:** `100 queries * 978.0 tokens = 97,800 tokens/day`
+- **Daily API Spend:** `100 queries * $0.0000825 = $0.0083 USD/day` (under 1 cent per day)
+- **30-Day Monthly Projection:** `$0.00825 * 30 days = $0.2475 USD/month` (~25 cents per month)
+
+### Granular 10-Run Breakdown
+
+| Run | Question | Total Latency | Stage Latency (Ret / Gen) | Tokens (In / Out) | Cost (USD) |
+|---|---|---|---|---|---|
+| 1 | How much RAM do I need for CS courses? | 6,509.4 ms | 1,032.2 ms / 5,477.2 ms | 869 / 20 (889 tot) | $0.000071 |
+| 2 | When is the deadline to change your meal plan tier? | 663.2 ms | 41.2 ms / 621.9 ms | 972 / 24 (996 tot) | $0.000080 |
+| 3 | Is a bike worth it for a 20 minute commute? | 981.4 ms | 41.5 ms / 939.8 ms | 937 / 84 (1,021 tot) | $0.000095 |
+| 4 | What is the first step if you have a roommate conflict? | 639.0 ms | 40.7 ms / 598.2 ms | 932 / 43 (975 tot) | $0.000083 |
+| 5 | What happens if you turn in an assignment late? | 629.9 ms | 41.1 ms / 588.7 ms | 1,004 / 63 (1,067 tot) | $0.000094 |
+| 6 | Is the campus printing quota enough for the semester? | 936.4 ms | 41.9 ms / 894.4 ms | 914 / 53 (967 tot) | $0.000084 |
+| 7 | Can freshmen bring a car and park on campus? | 852.3 ms | 42.1 ms / 810.1 ms | 955 / 31 (986 tot) | $0.000081 |
+| 8 | What is the best time to do laundry in dorms? | 1,615.2 ms | 42.5 ms / 1,572.6 ms | 907 / 34 (941 tot) | $0.000078 |
+| 9 | Where are the quietest study spots during finals week? | 647.2 ms | 41.8 ms / 605.3 ms | 896 / 24 (920 tot) | $0.000074 |
+| 10 | When should you use the pass/fail grading option? | 599.3 ms | 42.4 ms / 556.8 ms | 987 / 31 (1,018 tot) | $0.000083 |
+| **Avg** | **10 Distinct In-Scope Queries** | **1,407.3 ms** | **140.5 ms / 1,027.6 ms** | **937.3 / 40.7 (978.0 tot)** | **$0.000083** |
 
 ---
 

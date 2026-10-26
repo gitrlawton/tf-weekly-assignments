@@ -205,6 +205,7 @@ def ask_pipeline(
     fallback_degradation: bool = True,
     timeout: float | None = None,
     hybrid: bool = False,
+    cache: bool = True,
 ):
     """Retrieve, gate, answer. Returns the outcome and prints nothing.
 
@@ -287,7 +288,9 @@ def ask_pipeline(
     outcome["prompt"] = prompt
     t_gen_start = time.perf_counter()
     try:
-        outcome["answer"] = answer_from_chunks(question, results, timeout=timeout)
+        outcome["answer"] = answer_from_chunks(
+            question, results, cache=cache, timeout=timeout
+        )
     except Exception as exc:
         if fallback_degradation:
             from generate import format_degraded_fallback

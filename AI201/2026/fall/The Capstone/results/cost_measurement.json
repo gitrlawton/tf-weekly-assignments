@@ -1,0 +1,222 @@
+{
+  "avg_latency": 1407.3310000000001,
+  "avg_retrieval": 140.537,
+  "avg_generation": 1027.557,
+  "avg_prompt_tokens": 937.3,
+  "avg_output_tokens": 40.7,
+  "avg_total_tokens": 978.0,
+  "avg_cost": 8.25075e-05,
+  "daily_cost_100": 0.00825075,
+  "records": [
+    {
+      "run": 1,
+      "question": "How much RAM do I need for CS courses?",
+      "refused": false,
+      "sources": [
+        "thread_first_gen.txt",
+        "thread_laptop_specs.txt",
+        "thread_pass_fail.txt",
+        "thread_printing.txt",
+        "thread_professor_email.txt"
+      ],
+      "retrieval_ms": 1014.22,
+      "gate_ms": 0.01,
+      "generation_ms": 3103.17,
+      "total_latency_ms": 6509.35,
+      "prompt_tokens": 869,
+      "output_tokens": 20,
+      "total_tokens": 889,
+      "cost_usd": 7.1175e-05,
+      "answer_preview": "You need 16GB of RAM for CS courses (thread_laptop_specs.txt"
+    },
+    {
+      "run": 2,
+      "question": "When is the deadline to change your meal plan tier?",
+      "refused": false,
+      "sources": [
+        "thread_first_year_regret.txt",
+        "thread_late_work.txt",
+        "thread_laundry_timing.txt",
+        "thread_meal_plan_tier.txt",
+        "thread_transfer_credits.txt"
+      ],
+      "retrieval_ms": 44.98,
+      "gate_ms": 0.01,
+      "generation_ms": 618.14,
+      "total_latency_ms": 663.16,
+      "prompt_tokens": 972,
+      "output_tokens": 24,
+      "total_tokens": 996,
+      "cost_usd": 8.01e-05,
+      "answer_preview": "You can only change your meal plan tier in the first ten day"
+    },
+    {
+      "run": 3,
+      "question": "Is a bike worth it for a 20 minute commute?",
+      "refused": false,
+      "sources": [
+        "thread_bike_commute.txt",
+        "thread_commuting.txt",
+        "thread_parking.txt",
+        "thread_professor_email.txt",
+        "thread_winter_advice.txt"
+      ],
+      "retrieval_ms": 42.9,
+      "gate_ms": 0.01,
+      "generation_ms": 938.48,
+      "total_latency_ms": 981.43,
+      "prompt_tokens": 937,
+      "output_tokens": 84,
+      "total_tokens": 1021,
+      "cost_usd": 9.5475e-05,
+      "answer_preview": "Yes, a bike can cut an 18-minute walk down to about 6 minute"
+    },
+    {
+      "run": 4,
+      "question": "What is the first step if you have a roommate conflict?",
+      "refused": false,
+      "sources": [
+        "thread_group_project.txt",
+        "thread_meal_plan_tier.txt",
+        "thread_roommate_conflict.txt",
+        "thread_sleep_schedule.txt",
+        "thread_study_spots.txt"
+      ],
+      "retrieval_ms": 42.24,
+      "gate_ms": 0.01,
+      "generation_ms": 596.69,
+      "total_latency_ms": 638.98,
+      "prompt_tokens": 932,
+      "output_tokens": 43,
+      "total_tokens": 975,
+      "cost_usd": 8.28e-05,
+      "answer_preview": "The first step if you have a roommate conflict is to talk to"
+    },
+    {
+      "run": 5,
+      "question": "What happens if you turn in an assignment late?",
+      "refused": false,
+      "sources": [
+        "thread_commuting.txt",
+        "thread_first_year_regret.txt",
+        "thread_group_project.txt",
+        "thread_late_work.txt",
+        "thread_pass_fail.txt"
+      ],
+      "retrieval_ms": 45.45,
+      "gate_ms": 0.01,
+      "generation_ms": 584.41,
+      "total_latency_ms": 629.91,
+      "prompt_tokens": 1004,
+      "output_tokens": 63,
+      "total_tokens": 1067,
+      "cost_usd": 9.42e-05,
+      "answer_preview": "What happens if you turn in an assignment late is entirely i"
+    },
+    {
+      "run": 6,
+      "question": "Is the campus printing quota enough for the semester?",
+      "refused": false,
+      "sources": [
+        "thread_commuting.txt",
+        "thread_first_year_regret.txt",
+        "thread_laptop_specs.txt",
+        "thread_printing.txt",
+        "thread_professor_email.txt"
+      ],
+      "retrieval_ms": 42.36,
+      "gate_ms": 0.01,
+      "generation_ms": 894.04,
+      "total_latency_ms": 936.45,
+      "prompt_tokens": 914,
+      "output_tokens": 53,
+      "total_tokens": 967,
+      "cost_usd": 8.444999999999999e-05,
+      "answer_preview": "For most people, yes; the $30 quota is about 600 black and w"
+    },
+    {
+      "run": 7,
+      "question": "Can freshmen bring a car and park on campus?",
+      "refused": false,
+      "sources": [
+        "thread_bike_commute.txt",
+        "thread_commuting.txt",
+        "thread_first_gen.txt",
+        "thread_parking.txt",
+        "thread_study_spots.txt"
+      ],
+      "retrieval_ms": 47.86,
+      "gate_ms": 0.01,
+      "generation_ms": 804.36,
+      "total_latency_ms": 852.26,
+      "prompt_tokens": 955,
+      "output_tokens": 31,
+      "total_tokens": 986,
+      "cost_usd": 8.092499999999999e-05,
+      "answer_preview": "I do not have enough information to answer whether freshmen "
+    },
+    {
+      "run": 8,
+      "question": "What is the best time to do laundry in dorms?",
+      "refused": false,
+      "sources": [
+        "thread_commuting.txt",
+        "thread_late_work.txt",
+        "thread_laundry_timing.txt",
+        "thread_roommate_conflict.txt",
+        "thread_study_spots.txt"
+      ],
+      "retrieval_ms": 41.83,
+      "gate_ms": 0.01,
+      "generation_ms": 1573.32,
+      "total_latency_ms": 1615.2,
+      "prompt_tokens": 907,
+      "output_tokens": 34,
+      "total_tokens": 941,
+      "cost_usd": 7.8225e-05,
+      "answer_preview": "Laundry is actually free during Tuesday and Wednesday mornin"
+    },
+    {
+      "run": 9,
+      "question": "Where are the quietest study spots during finals week?",
+      "refused": false,
+      "sources": [
+        "thread_commuting.txt",
+        "thread_internship_timing.txt",
+        "thread_office_hours_etiquette.txt",
+        "thread_roommate_conflict.txt",
+        "thread_study_spots.txt"
+      ],
+      "retrieval_ms": 40.74,
+      "gate_ms": 0.01,
+      "generation_ms": 606.44,
+      "total_latency_ms": 647.22,
+      "prompt_tokens": 896,
+      "output_tokens": 24,
+      "total_tokens": 920,
+      "cost_usd": 7.439999999999999e-05,
+      "answer_preview": "I do not have enough information to answer this question, as"
+    },
+    {
+      "run": 10,
+      "question": "When should you use the pass/fail grading option?",
+      "refused": false,
+      "sources": [
+        "thread_first_year_regret.txt",
+        "thread_group_project.txt",
+        "thread_late_work.txt",
+        "thread_pass_fail.txt",
+        "thread_textbook_editions.txt"
+      ],
+      "retrieval_ms": 42.79,
+      "gate_ms": 0.01,
+      "generation_ms": 556.52,
+      "total_latency_ms": 599.35,
+      "prompt_tokens": 987,
+      "output_tokens": 31,
+      "total_tokens": 1018,
+      "cost_usd": 8.332499999999999e-05,
+      "answer_preview": "You should use the pass/fail option for a course outside you"
+    }
+  ]
+}
