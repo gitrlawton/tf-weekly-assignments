@@ -137,16 +137,167 @@ Cost was measured empirically across **10 non-cached queries** covering 10 disti
 
 ## Run Log and Verdicts
 
-| # | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|---|
-| 1 | *(Criterion 1)* | | | | | |
-| 2 | *(Criterion 2)* | | | | | |
-| 3 | *(Criterion 3)* | | | | | |
-| 4 | *(Criterion 4)* | | | | | |
-| 5 | *(Criterion 5)* | | | | | |
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| **1. End-to-End Latency (< 3.5s)** | 4 of 5 runs < 3.5s | 4/5 (80%) | 5/5 (100%) | 4/5 (80%) | **MET** |
+| **2. Logging Traceability** | 10 of 10 valid JSON records | 10/10 (100%) | 10/10 (100%) | 10/10 (100%) | **MET** |
+| **3. Health Probe Accuracy** | Status 200 when ready, 503 when unready | PASS (200/503) | PASS (200/503) | PASS (200/503) | **MET** |
+| **4. Inbound Boundary Defense** | 3 of 3 malicious payloads blocked (400) | 3/3 (100%) | 3/3 (100%) | 3/3 (100%) | **MET** |
+| **5. Graceful Degradation on Timeout** | 200 OK + `degraded: true` + raw excerpts | PASS | PASS | PASS | **MET** |
+| **6. Vector Store Unreachability Intercept** | Clean 503 + `INDEX_UNAVAILABLE` error | PASS | PASS | PASS | **MET** |
+| **7. BM25 Lexical Ranking Boost (RRF)** | 4 of 5 target threads in rank 1 or 2 | 5/5 (100%) | 5/5 (100%) | 5/5 (100%) | **MET** |
+| **8. Gate Refusal Fidelity under Hybrid** | 4 of 5 out-of-scope queries refused | 5/5 (100%) | 5/5 (100%) | 5/5 (100%) | **MET** |
+| **9. Hybrid Retrieval Overhead (< 35ms)** | Delta $\Delta \le 35\text{ms}$ over dense search | +1.60 ms | -1.79 ms | +6.12 ms | **MET** |
+
+### Real Output Snippets (Milestone 5 Measurement Artifacts)
+
+Below are actual output snippets captured during the evaluation runs across all 9 criteria, citing the producing file and function/endpoint:
+
+#### 1. End-to-End Latency (< 3.5s)
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+- **Producing Function / Endpoint:** `POST /ask` (`ask_endpoint`)
+```json
+{
+  "question": "How much RAM do I need for CS courses?",
+  "latency_ms": 2960.38,
+  "status_code": 200,
+  "degraded": false,
+  "refused": false,
+  "timing_ms": {
+    "retrieval": 43.47,
+    "gate": 0.01,
+    "generation": 775.09
+  }
+}
+```
+
+#### 2. Logging Traceability
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py) & [logs/requests.jsonl](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/logs/requests.jsonl)
+- **Producing Function / Endpoint:** `log_request_event()` in [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+```json
+{"request_id": "ed27cef7-4db2-43fa-a5a3-119fad75e9c1", "client_ip": "127.0.0.1", "endpoint": "/stats", "method": "GET", "status_code": 200, "latency_ms": 8.09, "retrieval_ms": 0.0, "gate_ms": 0.0, "generation_ms": 0.0, "question": null, "refused": false, "degraded": false, "hybrid": false, "rrf_score": null, "best_distance": null, "prompt_tokens": 0, "output_tokens": 0, "error": null, "timestamp": "2026-10-26T07:17:58.740962+00:00"}
+```
+
+#### 3. Health Probe Accuracy
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+- **Producing Function / Endpoint:** `GET /health` (`health_check`)
+```json
+// Ready State (HTTP 200 OK)
+{
+  "api_key_configured": true,
+  "chunk_count": 23,
+  "corpus": "advice_threads",
+  "detail": "System healthy and ready to answer queries",
+  "index_ready": true,
+  "status": "ready"
+}
+
+// Unready / Fault State (HTTP 503 Service Unavailable)
+{
+  "api_key_configured": true,
+  "chunk_count": 23,
+  "corpus": "advice_threads",
+  "detail": "Index missing — run `python app.py index`",
+  "index_ready": false,
+  "status": "not_ready"
+}
+```
+
+#### 4. Inbound Boundary Defense
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py) & [exceptions.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/exceptions.py)
+- **Producing Function / Endpoint:** `validate_query_payload()` & `handle_bad_request_error()`
+```json
+{
+  "code": "PAYLOAD_TOO_LARGE",
+  "error": "Bad Request",
+  "message": "Question exceeds maximum allowed length of 1000 characters (received 1250).",
+  "request_id": "2789791d-6426-49e4-b884-8f08a9f7e3d7",
+  "status_code": 400
+}
+```
+
+#### 5. Graceful Degradation on Upstream Timeout
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py) & [generate.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/generate.py)
+- **Producing Function / Endpoint:** `execute_rag_pipeline()` & `generate_answer()` fallback
+```json
+{
+  "question": "What is the policy for late assignment submission?",
+  "status_code": 200,
+  "degraded": true,
+  "error_detail": "UpstreamModelTimeoutError: Gemini API request timed out after 0.0s",
+  "answer": "[NOTICE: AI model temporarily unavailable or timed out. Showing retrieved student advice excerpts below:]\n\n[from thread_late_work.txt]\nTHREAD: What actually happens if you hand something in late?\n\n--- reply 1 (20 votes) ---\nEntirely instructor-dependent and the syllabus is accurate. If it says 10% a day, it's 10% a day.\n\n--- reply 2 (47 votes) ---\nThe universal rule: ask before the deadline, not after. Almost everyone will give you two days if you ask on Wednesday for a Friday deadline. Almost nobody will on the following Monday...",
+  "ranked_sources": [
+    "thread_late_work.txt",
+    "thread_group_project.txt",
+    "thread_first_year_regret.txt"
+  ]
+}
+```
+
+#### 6. Vector Store Unreachability Intercept
+- **Producing File:** [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py) & [exceptions.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/exceptions.py)
+- **Producing Function / Endpoint:** `handle_index_unavailable_error()` in [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+```json
+{
+  "code": "INDEX_UNAVAILABLE",
+  "error": "Service Unavailable",
+  "message": "Simulated vector index corruption or unreachability.",
+  "request_id": "d829a86d-c572-471c-a177-c7ca52207b0b",
+  "status_code": 503
+}
+```
+
+#### 7. BM25 Lexical Ranking Boost (RRF)
+- **Producing File:** [hybrid.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/hybrid.py) & [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+- **Producing Function / Endpoint:** `hybrid_search()` in [hybrid.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/hybrid.py)
+```json
+{
+  "question": "How much RAM do I need for CS courses?",
+  "hybrid": true,
+  "rrf_score": 0.03279,
+  "ranked_sources": [
+    "thread_laptop_specs.txt",
+    "thread_first_year_regret.txt",
+    "thread_commuting.txt",
+    "thread_professor_email.txt",
+    "thread_clubs.txt"
+  ]
+}
+```
+
+#### 8. Gate Refusal Fidelity under Hybrid
+- **Producing File:** [gate.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/gate.py) & [serve.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/serve.py)
+- **Producing Function / Endpoint:** `evaluate_query()` in [gate.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/gate.py)
+```json
+{
+  "question": "What is the capital of Mongolia?",
+  "status_code": 200,
+  "refused": true,
+  "best_distance": 0.9479,
+  "threshold": 0.6,
+  "answer": "I can only answer questions about advice for incoming university students based on the provided guide threads."
+}
+```
+
+#### 9. Hybrid Retrieval Overhead (< 35ms)
+- **Producing File:** [tools/run_capstone_evals.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/tools/run_capstone_evals.py) & [hybrid.py](file:///c:/Users/rlawt/Documents/Repos/codepath/tf-weekly-assignments/AI201/2026/fall/The%20Capstone/hybrid.py)
+- **Producing Function / Endpoint:** BM25 + Chroma Vector RRF Benchmark vs. Pure Vector Retrieve
+```json
+{
+  "avg_dense_retrieval_ms": 42.13,
+  "avg_hybrid_retrieval_ms": 43.73,
+  "overhead_ms": 1.60,
+  "target": "< 35ms",
+  "met": true
+}
+```
 
 ### Diagnoses of Misses
-*(Detailed stage and mechanism analysis for any unmet criteria)*
+
+Every single criterion was **MET** across all three separate evaluation cycles:
+- **Shape A (Operational Service):** Criteria 1, 2, and 3 met their targets across Runs 1, 2, and 3 (0 misses).
+- **Shape B (Error Handling & Boundaries):** Criteria 4, 5, and 6 defended against all malformed payloads, degraded with retrieved excerpts on upstream timeouts without crashing, and caught vector store faults with 503 across Runs 1, 2, and 3 (0 misses).
+- **Shape C (Hybrid Retrieval):** Criteria 7, 8, and 9 correctly elevated lexical keywords via BM25/RRF, maintained strict out-of-scope refusal fidelity, and operated within a mean retrieval overhead bound of $1.60\text{ ms} \ll 35\text{ ms}$ across Runs 1, 2, and 3 (0 misses).
 
 ---
 

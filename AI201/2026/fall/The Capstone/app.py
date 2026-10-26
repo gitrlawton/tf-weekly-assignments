@@ -304,6 +304,7 @@ def ask_pipeline(
     outcome["timing"]["generation_ms"] = round(generation_ms, 2)
     outcome["tokens"] = last_call_tokens()
     outcome["sources"] = sorted({r.source for r in results})
+    outcome["ranked_sources"] = [r.source for r in results]
     return outcome
 
 

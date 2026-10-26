@@ -1,0 +1,477 @@
+{
+  "summary": [
+    {
+      "num": 1,
+      "name": "1. End-to-End Latency (< 3.5s)",
+      "target": "4 of 5",
+      "run1": "4/5",
+      "run2": "5/5",
+      "run3": "4/5",
+      "verdict": "MET"
+    },
+    {
+      "num": 2,
+      "name": "2. Logging Traceability",
+      "target": "10 of 10",
+      "run1": "10/10",
+      "run2": "10/10",
+      "run3": "10/10",
+      "verdict": "MET"
+    },
+    {
+      "num": 3,
+      "name": "3. Health Probe Accuracy",
+      "target": "PASS",
+      "run1": "PASS",
+      "run2": "PASS",
+      "run3": "PASS",
+      "verdict": "MET"
+    },
+    {
+      "num": 4,
+      "name": "4. Inbound Boundary Defense",
+      "target": "3 of 3",
+      "run1": "3/3",
+      "run2": "3/3",
+      "run3": "3/3",
+      "verdict": "MET"
+    },
+    {
+      "num": 5,
+      "name": "5. Graceful Degradation on Timeout",
+      "target": "PASS",
+      "run1": "PASS",
+      "run2": "PASS",
+      "run3": "PASS",
+      "verdict": "MET"
+    },
+    {
+      "num": 6,
+      "name": "6. Vector Store Unreachability Intercept",
+      "target": "PASS",
+      "run1": "PASS",
+      "run2": "PASS",
+      "run3": "PASS",
+      "verdict": "MET"
+    },
+    {
+      "num": 7,
+      "name": "7. BM25 Lexical Ranking Boost (RRF)",
+      "target": "4 of 5",
+      "run1": "5/5",
+      "run2": "5/5",
+      "run3": "5/5",
+      "verdict": "MET"
+    },
+    {
+      "num": 8,
+      "name": "8. Gate Refusal Fidelity under Hybrid",
+      "target": "4 of 5",
+      "run1": "5/5",
+      "run2": "5/5",
+      "run3": "5/5",
+      "verdict": "MET"
+    },
+    {
+      "num": 9,
+      "name": "9. Hybrid Retrieval Overhead (< 35ms)",
+      "target": "< 35ms",
+      "run1": "+1.60ms",
+      "run2": "-1.79ms",
+      "run3": "+6.12ms",
+      "verdict": "MET"
+    }
+  ],
+  "cycles": [
+    {
+      "results": {
+        "c1": "4/5",
+        "c2": "10/10",
+        "c3": "PASS",
+        "c4": "3/3",
+        "c5": "PASS",
+        "c6": "PASS",
+        "c7": "5/5",
+        "c8": "5/5",
+        "c9": "+1.60ms"
+      },
+      "samples": {
+        "c1": {
+          "q": "How much RAM do I need for CS courses?",
+          "lat": 6250.18,
+          "status": 200
+        },
+        "c2": {
+          "request_id": "ed27cef7-4db2-43fa-a5a3-119fad75e9c1",
+          "client_ip": "127.0.0.1",
+          "endpoint": "/stats",
+          "method": "GET",
+          "status_code": 200,
+          "latency_ms": 8.09,
+          "retrieval_ms": 0.0,
+          "gate_ms": 0.0,
+          "generation_ms": 0.0,
+          "question": null,
+          "refused": false,
+          "degraded": false,
+          "hybrid": false,
+          "rrf_score": null,
+          "best_distance": null,
+          "prompt_tokens": 0,
+          "output_tokens": 0,
+          "error": null,
+          "timestamp": "2026-10-26T07:17:58.740962+00:00"
+        },
+        "c3": {
+          "ready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "System healthy and ready to answer queries",
+            "index_ready": true,
+            "status": "ready"
+          },
+          "unready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "Index missing \u2014 run `python app.py index`",
+            "index_ready": false,
+            "status": "not_ready"
+          }
+        },
+        "c4": {
+          "code": "PAYLOAD_TOO_LARGE",
+          "error": "Bad Request",
+          "message": "Question exceeds maximum allowed length of 1000 characters (received 1250).",
+          "request_id": "2789791d-6426-49e4-b884-8f08a9f7e3d7",
+          "status_code": 400
+        },
+        "c5": {
+          "answer": "[NOTICE: AI model temporarily unavailable or timed out. Showing retrieved student advice excerpts below:]\n\n[from thread_late_work.txt]\nTHREAD: What actually happens if you hand something in late?\n\n--- reply 1 (20 votes) ---\nEntirely instructor-dependent and the syllabus is accurate. If it says 10% a day, it's 10% a day.\n\n--- reply 2 (47 votes) ---\nThe universal rule: ask before the deadline, not after. Almost everyone will give you two days if you ask on Wednesday for a Friday deadline. Almost nobody will on the following Monday.\n\n--- reply 3 (15 votes) ---\nDocumented illness goes through the dean of students rather than the instructor, and that route works.\n\n[from thread_group_project.txt]\nTHREAD: How do you handle a group project where someone disappears?\n\n--- reply 1 (29 votes) ---\nDocument early. Not to be difficult \u2014 because if you go to the instructor in week 10 with nothing written down, there's nothing they can do.\n\n--- reply 2 (22 votes) ---\nMost instructors here will adjust individual grades if you raise it before the deadline rather than after. After is too late, consistently.\n\n--- reply 3 (16 votes) ---\nSplit work into pieces that can be handed off. If one person's part is load-bearing for everyone else, one disappearance sinks it.\n\n[from thread_first_year_regret.txt]\nTHREAD: What do you wish you'd known in first year?\n\n--- reply 1 (41 votes) ---\nThat the add/drop deadline and the withdrawal deadline are different dates and only one of them is on the calendar everyone reads.\n\n--- reply 2 (28 votes) ---\nThat you can take a course pass/fail and declare it late \u2014 up to week eight. I carried a grade I didn't need to.\n\n--- reply 3 (35 votes) ---\nThat the writing centre will read a draft for any course, not just writing courses. Free, and the appointments go unbooked.\n\n--- reply 4 (52 votes) ---\nHonestly: that nobody is watching as closely as you think. I spent a year worried about looking like I knew what I was doing.\n\n--- reply 5 (17 votes) ---\nThat your adviser's job is partly to know the exceptions to rules. Ask before assuming a deadline is fixed.",
+          "best_distance": 0.4945,
+          "corpus": "advice_threads",
+          "degraded": true,
+          "error_detail": "UpstreamModelTimeoutError: Gemini API request timed out after 0.0s",
+          "hybrid": false,
+          "question": "What is the policy for late assignment submission?",
+          "ranked_sources": [
+            "thread_late_work.txt",
+            "thread_group_project.txt",
+            "thread_first_year_regret.txt",
+            "thread_pass_fail.txt",
+            "thread_first_gen.txt"
+          ],
+          "refused": false,
+          "rrf_score": null,
+          "sources": [
+            "thread_first_gen.txt",
+            "thread_first_year_regret.txt",
+            "thread_group_project.txt",
+            "thread_late_work.txt",
+            "thread_pass_fail.txt"
+          ],
+          "threshold": 0.6,
+          "timing_ms": {
+            "gate": 0.01,
+            "generation": 658.11,
+            "retrieval": 45.91
+          },
+          "tokens": {
+            "output": 39,
+            "prompt": 932,
+            "total": 971
+          }
+        },
+        "c6": {
+          "code": "INDEX_UNAVAILABLE",
+          "error": "Service Unavailable",
+          "message": "Simulated vector index corruption or unreachability.",
+          "request_id": "d829a86d-c572-471c-a177-c7ca52207b0b",
+          "status_code": 503
+        },
+        "c7": {
+          "q": "How much RAM do I need for CS courses?",
+          "ranked_sources": [
+            "thread_laptop_specs.txt",
+            "thread_first_year_regret.txt",
+            "thread_commuting.txt",
+            "thread_professor_email.txt",
+            "thread_clubs.txt"
+          ],
+          "rrf": 0.03279
+        },
+        "c8": {
+          "q": "What is the capital of Mongolia?",
+          "refused": true,
+          "dist": 0.9479
+        },
+        "c9": {
+          "avg_dense_retrieval_ms": 42.13,
+          "avg_hybrid_retrieval_ms": 43.73,
+          "overhead_ms": 1.6
+        }
+      }
+    },
+    {
+      "results": {
+        "c1": "5/5",
+        "c2": "10/10",
+        "c3": "PASS",
+        "c4": "3/3",
+        "c5": "PASS",
+        "c6": "PASS",
+        "c7": "5/5",
+        "c8": "5/5",
+        "c9": "-1.79ms"
+      },
+      "samples": {
+        "c1": {
+          "q": "How much RAM do I need for CS courses?",
+          "lat": 2960.38,
+          "status": 200
+        },
+        "c2": {
+          "request_id": "920aad1f-429a-4fd3-aef9-789345eec2e1",
+          "client_ip": "127.0.0.1",
+          "endpoint": "/stats",
+          "method": "GET",
+          "status_code": 200,
+          "latency_ms": 6.93,
+          "retrieval_ms": 0.0,
+          "gate_ms": 0.0,
+          "generation_ms": 0.0,
+          "question": null,
+          "refused": false,
+          "degraded": false,
+          "hybrid": false,
+          "rrf_score": null,
+          "best_distance": null,
+          "prompt_tokens": 0,
+          "output_tokens": 0,
+          "error": null,
+          "timestamp": "2026-10-26T07:20:02.982763+00:00"
+        },
+        "c3": {
+          "ready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "System healthy and ready to answer queries",
+            "index_ready": true,
+            "status": "ready"
+          },
+          "unready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "Index missing \u2014 run `python app.py index`",
+            "index_ready": false,
+            "status": "not_ready"
+          }
+        },
+        "c4": {
+          "code": "PAYLOAD_TOO_LARGE",
+          "error": "Bad Request",
+          "message": "Question exceeds maximum allowed length of 1000 characters (received 1250).",
+          "request_id": "71cb4b26-ab13-4292-8444-032b60558896",
+          "status_code": 400
+        },
+        "c5": {
+          "answer": "[NOTICE: AI model temporarily unavailable or timed out. Showing retrieved student advice excerpts below:]\n\n[from thread_late_work.txt]\nTHREAD: What actually happens if you hand something in late?\n\n--- reply 1 (20 votes) ---\nEntirely instructor-dependent and the syllabus is accurate. If it says 10% a day, it's 10% a day.\n\n--- reply 2 (47 votes) ---\nThe universal rule: ask before the deadline, not after. Almost everyone will give you two days if you ask on Wednesday for a Friday deadline. Almost nobody will on the following Monday.\n\n--- reply 3 (15 votes) ---\nDocumented illness goes through the dean of students rather than the instructor, and that route works.\n\n[from thread_group_project.txt]\nTHREAD: How do you handle a group project where someone disappears?\n\n--- reply 1 (29 votes) ---\nDocument early. Not to be difficult \u2014 because if you go to the instructor in week 10 with nothing written down, there's nothing they can do.\n\n--- reply 2 (22 votes) ---\nMost instructors here will adjust individual grades if you raise it before the deadline rather than after. After is too late, consistently.\n\n--- reply 3 (16 votes) ---\nSplit work into pieces that can be handed off. If one person's part is load-bearing for everyone else, one disappearance sinks it.\n\n[from thread_first_year_regret.txt]\nTHREAD: What do you wish you'd known in first year?\n\n--- reply 1 (41 votes) ---\nThat the add/drop deadline and the withdrawal deadline are different dates and only one of them is on the calendar everyone reads.\n\n--- reply 2 (28 votes) ---\nThat you can take a course pass/fail and declare it late \u2014 up to week eight. I carried a grade I didn't need to.\n\n--- reply 3 (35 votes) ---\nThat the writing centre will read a draft for any course, not just writing courses. Free, and the appointments go unbooked.\n\n--- reply 4 (52 votes) ---\nHonestly: that nobody is watching as closely as you think. I spent a year worried about looking like I knew what I was doing.\n\n--- reply 5 (17 votes) ---\nThat your adviser's job is partly to know the exceptions to rules. Ask before assuming a deadline is fixed.",
+          "best_distance": 0.4945,
+          "corpus": "advice_threads",
+          "degraded": true,
+          "error_detail": "UpstreamModelTimeoutError: Gemini API request timed out after 0.0s",
+          "hybrid": false,
+          "question": "What is the policy for late assignment submission?",
+          "ranked_sources": [
+            "thread_late_work.txt",
+            "thread_group_project.txt",
+            "thread_first_year_regret.txt",
+            "thread_pass_fail.txt",
+            "thread_first_gen.txt"
+          ],
+          "refused": false,
+          "rrf_score": null,
+          "sources": [
+            "thread_first_gen.txt",
+            "thread_first_year_regret.txt",
+            "thread_group_project.txt",
+            "thread_late_work.txt",
+            "thread_pass_fail.txt"
+          ],
+          "threshold": 0.6,
+          "timing_ms": {
+            "gate": 0.01,
+            "generation": 1118.3,
+            "retrieval": 41.43
+          },
+          "tokens": {
+            "output": 40,
+            "prompt": 932,
+            "total": 972
+          }
+        },
+        "c6": {
+          "code": "INDEX_UNAVAILABLE",
+          "error": "Service Unavailable",
+          "message": "Simulated vector index corruption or unreachability.",
+          "request_id": "117749c7-f1bf-42e3-a3cd-a849433f220d",
+          "status_code": 503
+        },
+        "c7": {
+          "q": "How much RAM do I need for CS courses?",
+          "ranked_sources": [
+            "thread_laptop_specs.txt",
+            "thread_first_year_regret.txt",
+            "thread_commuting.txt",
+            "thread_professor_email.txt",
+            "thread_clubs.txt"
+          ],
+          "rrf": 0.03279
+        },
+        "c8": {
+          "q": "What is the capital of Mongolia?",
+          "refused": true,
+          "dist": 0.9479
+        },
+        "c9": {
+          "avg_dense_retrieval_ms": 46.51,
+          "avg_hybrid_retrieval_ms": 44.72,
+          "overhead_ms": -1.79
+        }
+      }
+    },
+    {
+      "results": {
+        "c1": "4/5",
+        "c2": "10/10",
+        "c3": "PASS",
+        "c4": "3/3",
+        "c5": "PASS",
+        "c6": "PASS",
+        "c7": "5/5",
+        "c8": "5/5",
+        "c9": "+6.12ms"
+      },
+      "samples": {
+        "c1": {
+          "q": "How much RAM do I need for CS courses?",
+          "lat": 3189.56,
+          "status": 200
+        },
+        "c2": {
+          "request_id": "3cffa08e-baf7-46bc-b287-dafc548b0b6b",
+          "client_ip": "127.0.0.1",
+          "endpoint": "/stats",
+          "method": "GET",
+          "status_code": 200,
+          "latency_ms": 6.94,
+          "retrieval_ms": 0.0,
+          "gate_ms": 0.0,
+          "generation_ms": 0.0,
+          "question": null,
+          "refused": false,
+          "degraded": false,
+          "hybrid": false,
+          "rrf_score": null,
+          "best_distance": null,
+          "prompt_tokens": 0,
+          "output_tokens": 0,
+          "error": null,
+          "timestamp": "2026-10-26T07:22:11.070183+00:00"
+        },
+        "c3": {
+          "ready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "System healthy and ready to answer queries",
+            "index_ready": true,
+            "status": "ready"
+          },
+          "unready": {
+            "api_key_configured": true,
+            "chunk_count": 23,
+            "corpus": "advice_threads",
+            "detail": "Index missing \u2014 run `python app.py index`",
+            "index_ready": false,
+            "status": "not_ready"
+          }
+        },
+        "c4": {
+          "code": "PAYLOAD_TOO_LARGE",
+          "error": "Bad Request",
+          "message": "Question exceeds maximum allowed length of 1000 characters (received 1250).",
+          "request_id": "6d214f6c-f824-4819-82d4-313d3954a52e",
+          "status_code": 400
+        },
+        "c5": {
+          "answer": "[NOTICE: AI model temporarily unavailable or timed out. Showing retrieved student advice excerpts below:]\n\n[from thread_late_work.txt]\nTHREAD: What actually happens if you hand something in late?\n\n--- reply 1 (20 votes) ---\nEntirely instructor-dependent and the syllabus is accurate. If it says 10% a day, it's 10% a day.\n\n--- reply 2 (47 votes) ---\nThe universal rule: ask before the deadline, not after. Almost everyone will give you two days if you ask on Wednesday for a Friday deadline. Almost nobody will on the following Monday.\n\n--- reply 3 (15 votes) ---\nDocumented illness goes through the dean of students rather than the instructor, and that route works.\n\n[from thread_group_project.txt]\nTHREAD: How do you handle a group project where someone disappears?\n\n--- reply 1 (29 votes) ---\nDocument early. Not to be difficult \u2014 because if you go to the instructor in week 10 with nothing written down, there's nothing they can do.\n\n--- reply 2 (22 votes) ---\nMost instructors here will adjust individual grades if you raise it before the deadline rather than after. After is too late, consistently.\n\n--- reply 3 (16 votes) ---\nSplit work into pieces that can be handed off. If one person's part is load-bearing for everyone else, one disappearance sinks it.\n\n[from thread_first_year_regret.txt]\nTHREAD: What do you wish you'd known in first year?\n\n--- reply 1 (41 votes) ---\nThat the add/drop deadline and the withdrawal deadline are different dates and only one of them is on the calendar everyone reads.\n\n--- reply 2 (28 votes) ---\nThat you can take a course pass/fail and declare it late \u2014 up to week eight. I carried a grade I didn't need to.\n\n--- reply 3 (35 votes) ---\nThat the writing centre will read a draft for any course, not just writing courses. Free, and the appointments go unbooked.\n\n--- reply 4 (52 votes) ---\nHonestly: that nobody is watching as closely as you think. I spent a year worried about looking like I knew what I was doing.\n\n--- reply 5 (17 votes) ---\nThat your adviser's job is partly to know the exceptions to rules. Ask before assuming a deadline is fixed.",
+          "best_distance": 0.4945,
+          "corpus": "advice_threads",
+          "degraded": true,
+          "error_detail": "UpstreamModelTimeoutError: Gemini API request timed out after 0.0s",
+          "hybrid": false,
+          "question": "What is the policy for late assignment submission?",
+          "ranked_sources": [
+            "thread_late_work.txt",
+            "thread_group_project.txt",
+            "thread_first_year_regret.txt",
+            "thread_pass_fail.txt",
+            "thread_first_gen.txt"
+          ],
+          "refused": false,
+          "rrf_score": null,
+          "sources": [
+            "thread_first_gen.txt",
+            "thread_first_year_regret.txt",
+            "thread_group_project.txt",
+            "thread_late_work.txt",
+            "thread_pass_fail.txt"
+          ],
+          "threshold": 0.6,
+          "timing_ms": {
+            "gate": 0.01,
+            "generation": 1265.49,
+            "retrieval": 48.36
+          },
+          "tokens": {
+            "output": 39,
+            "prompt": 932,
+            "total": 971
+          }
+        },
+        "c6": {
+          "code": "INDEX_UNAVAILABLE",
+          "error": "Service Unavailable",
+          "message": "Simulated vector index corruption or unreachability.",
+          "request_id": "cc90b306-f2f4-4783-92f4-947a6a94391f",
+          "status_code": 503
+        },
+        "c7": {
+          "q": "How much RAM do I need for CS courses?",
+          "ranked_sources": [
+            "thread_laptop_specs.txt",
+            "thread_first_year_regret.txt",
+            "thread_commuting.txt",
+            "thread_professor_email.txt",
+            "thread_clubs.txt"
+          ],
+          "rrf": 0.03279
+        },
+        "c8": {
+          "q": "What is the capital of Mongolia?",
+          "refused": true,
+          "dist": 0.9479
+        },
+        "c9": {
+          "avg_dense_retrieval_ms": 42.69,
+          "avg_hybrid_retrieval_ms": 48.81,
+          "overhead_ms": 6.12
+        }
+      }
+    }
+  ]
+}

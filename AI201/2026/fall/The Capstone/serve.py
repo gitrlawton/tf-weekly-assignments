@@ -228,6 +228,13 @@ def health():
             pass
 
     has_key = bool(os.getenv("GEMINI_API_KEY", "").strip())
+
+    sim_fault = (request.headers.get("X-Simulate-Fault") or "").strip().lower()
+    if sim_fault == "index_error":
+        has_index = False
+    elif sim_fault == "missing_key":
+        has_key = False
+
     ready = has_index and has_key
 
     status_payload = {
@@ -396,6 +403,7 @@ def ask():
             "rrf_score": outcome.get("rrf_score"),
             "error_detail": outcome.get("error_detail"),
             "sources": outcome["sources"],
+            "ranked_sources": outcome.get("ranked_sources", outcome["sources"]),
             "best_distance": round(outcome["best_distance"], 4),
             "threshold": outcome["threshold"],
             "corpus": config.CORPUS,
