@@ -156,11 +156,23 @@ It cannot read or understand meaning. Because it only evaluates superficial geom
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+  -d '{"text": "Artificial intelligence systems generate prose by maximizing token probability.", "creator_id": "student_writer"}'
 ```
 
 ```json
-
+{
+  "confidence": 0.5,
+  "content_id": "2ac183ab-6d28-47fe-af6f-beb41a6f9343",
+  "guess": "unsure",
+  "label": "unsure",
+  "model_score": 0.0059,
+  "ok": true,
+  "style_score": 0.5,
+  "you_sent": {
+    "creator_id": "student_writer",
+    "text": "Artificial intelligence systems generate prose by maximizing token probability."
+  }
+}
 ```
 
 **An appeal**
@@ -182,7 +194,33 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
-
+{
+  "count": 2,
+  "entries": [
+    {
+      "combined_score": 0.1087,
+      "content_id": "9c32b6ee-160e-4c27-a4a3-eaf5fe66ec4d",
+      "creator_id": "tester-alice",
+      "guess": "unsure",
+      "label": "unsure",
+      "model_score": 0.1087,
+      "status": "decided",
+      "style_score": 0.5,
+      "timestamp": "2026-10-27T06:09:09+00:00"
+    },
+    {
+      "combined_score": 0.0059,
+      "content_id": "2ac183ab-6d28-47fe-af6f-beb41a6f9343",
+      "creator_id": "student_writer",
+      "guess": "unsure",
+      "label": "unsure",
+      "model_score": 0.0059,
+      "status": "decided",
+      "style_score": 0.5,
+      "timestamp": "2026-10-27T06:14:17+00:00"
+    }
+  ]
+}
 ```
 
 ---

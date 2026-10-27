@@ -30,6 +30,7 @@ from flask import Flask, jsonify, request
 
 import audit
 import config
+import detector
 
 app = Flask(__name__)
 
@@ -200,16 +201,46 @@ def submit():
     a malformed input is one of the most common real failures there is.
     """
     payload = request.get_json(silent=True) or {}
+    text = payload.get("text", "")
+    creator_id = payload.get("creator_id", "unknown")
 
-    # TODO: delete this and build the route.
+    # Generate content_id (needed by /appeal)
+    content_id = str(uuid.uuid4())
+
+    # Call signal one — the model signal
+    model_score = detector.model_signal(text) if text else 0.0
+
+    # Placeholders for confidence, label, guess, and style_score (Milestone 3, step 3)
+    guess = "unsure"
+    confidence = 0.5
+    label = "unsure"
+    style_score = 0.5
+
+    # Write submission to the audit log (Milestone 3, step 4)
+    audit.log_decision(
+        content_id=content_id,
+        creator_id=creator_id,
+        guess=guess,
+        model_score=model_score,
+        style_score=style_score,
+        combined_score=model_score,
+        label=label,
+        status="decided",
+    )
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
+        "ok": True,
+        "content_id": content_id,
+        "guess": guess,
+        "confidence": confidence,
+        "label": label,
+        "model_score": model_score,
+        "style_score": style_score,
         "you_sent": {
-            "text_length": len(payload.get("text", "")),
-            "creator_id": payload.get("creator_id"),
+            "text": text,
+            "creator_id": creator_id,
         },
-    }), 501
+    }), 200
 
 
 @app.post("/appeal")
