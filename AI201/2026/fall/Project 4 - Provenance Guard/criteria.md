@@ -42,63 +42,53 @@ Two things worth knowing before you pick numbers:
   a **miss**.
 
 ---
-## 1.
+## 1. False Positives
 
 <!-- Your criterion. It must name a number. -->
-
-
+Of 10 pieces I wrote myself, at most 1 is labelled `high-confidence AI` (a false-positive rate $\le 10\%$) across all three test trials.
 
 **Why this target:**
-
-
+I allow at most 1 false positive in 10 because on a writing site a wrong accusation costs more than a missed detection. An author wrongly accused of cheating suffers immediate reputational harm, so the bar to accuse must stay high even if some AI text slips through.
 
 ---
 
-## 2.
+## 2. Score Spread
 
 <!-- Your criterion. -->
-
-
+The average combined score of 5 clearly-AI text samples is at least 0.35 points higher than the average combined score of 5 clearly-human text samples (on the 0.0 to 1.0 scale).
 
 **Why this target:**
-
-
+I chose a 0.35 spread because anything tighter means the classifier is making decisions on noise rather than distinct patterns. A separation of at least 0.35 ensures human and AI populations are clearly differentiated and leaves ample room for a viable `unsure` middle band.
 
 ---
 
-## 3.
+## 3. Label Coverage & Borderline Handling
 
 <!-- Your criterion. -->
-
-
+Text I judge borderline scores between 0.40 and 0.60 and receives the label `unsure` in at least 4 of 5 cases, and across 10 varied test inputs, every one of the 3 labels (`high-confidence human`, `unsure`, `high-confidence AI`) is assigned to at least 2 inputs.
 
 **Why this target:**
-
-
+I target 4 of 5 borderline pieces landing between 0.40 and 0.60 because forcing ambiguous text into binary labels guarantees false accusations. Requiring each label to appear at least twice proves that all three labels are actually reachable in real service operation.
 
 ---
 
-## 4.
+## 4. The Appeal Path
 
 <!-- Your criterion. -->
-
-
+Across 5 test submissions, 5 out of 5 valid requests to `POST /appeal` with an existing `content_id` change the audit log record status from `decided` to `under_review` and return HTTP status 200.
 
 **Why this target:**
-
-
+I require a 5 of 5 (100%) success rate because an appeal is the writer's only defense against an incorrect label. If even 1 appeal fails to transition status or get recorded in the log, an author has been silenced with no recourse.
 
 ---
 
-## 5.
+## 5. Bad Input Handling
 
 <!-- Your criterion. -->
-
-
+4 out of 4 malformed requests (missing `text` field, empty `text: ""`, `text: null`, and text exceeding 50,000 words) return an HTTP 400 or HTTP 413 status code with 0 unhandled HTTP 500 server crashes.
 
 **Why this target:**
-
-
+I require all 4 bad inputs to return 4xx client errors without crashing because unhandled 500 errors can mask service outages and create denial-of-service vulnerabilities. A resilient backend must reject bad data cleanly and keep running.
 
 ---
 
