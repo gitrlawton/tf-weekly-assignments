@@ -39,7 +39,33 @@
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
 
+1. **Client Request (`POST /submit`)**
+   - **Passes through:** HTTP endpoint in `app.py`
+   - **What it adds:** Delivers the raw JSON payload containing the submission `text` and `creator_id`, and passes through initial rate-limiting checks.
 
+2. **Input Validation and Extraction**
+   - **Passes through:** Request handler in `app.py`
+   - **What it adds:** Extracts `text` and `creator_id`, validates that input is present/non-empty, protects against oversized input, and assigns a unique `content_id` (UUID).
+
+3. **Model Signal Analysis**
+   - **Passes through:** Language model detector (`detector.py::model_signal`)
+   - **What it adds:** Measures text predictability and token perplexity using local GPT-2, outputting a normalized `model_score` from 0.0 (human-like) to 1.0 (machine-like).
+
+4. **Style Signal Analysis**
+   - **Passes through:** Stylometry analyzer (`stylometry.py::style_signal`)
+   - **What it adds:** Evaluates structural and statistical writing traits (such as sentence length variance and vocabulary richness), outputting a `style_score` from 0.0 to 1.0.
+
+5. **Signal Combination & Confidence**
+   - **Passes through:** Signal combiner (`scoring.py::combine_signals`)
+   - **What it adds:** Combines `model_score` and `style_score` according to a defined weighting and disagreement rule into a single combined score and calculates a confidence metric.
+
+6. **Threshold Mapping to Label**
+   - **Passes through:** Decision classifier (`scoring.py::score_to_label` using thresholds from `config.py`)
+   - **What it adds:** Maps the combined score against calibrated decision thresholds to produce an interpretable reader label: `high-confidence human`, `unsure`, or `high-confidence AI`.
+
+7. **Audit Logging & Response Delivery**
+   - **Passes through:** Audit logger (`audit.py::log_decision`) and Flask response formatter
+   - **What it adds:** Writes a permanent, timestamped entry to the audit log (recording `content_id`, `creator_id`, both component scores, combined score, and label) and returns the JSON payload containing the final label for the reader to see.
 
 ---
 
@@ -54,18 +80,24 @@
 ### Signal one — the model signal
 
 **What it measures:**
+Language predictability and token perplexity using a local causal language model (GPT-2). It calculates the average negative log-likelihood of each token given the preceding text, normalized into a score from 0.0 (high perplexity / human-like) to 1.0 (low perplexity / machine-like).
 
 **Why that might differ between human and AI writing:**
+Language models generate text by sampling probable tokens ("most likely next word"), creating prose that is statistically predictable to another language model. Human writing is much more idiosyncratic, introducing unexpected word transitions, varied syntax, and uncommon phrasing that yields higher perplexity.
 
 **What it can't see:**
+Predictability is not the same thing as authorship. It cannot distinguish AI generation from simple, plain human writing. Anyone writing plainly on purpose, younger writers, or non-native English speakers sticking to common, familiar vocabulary produce low-perplexity text that looks "machine-like" to GPT-2. Conversely, dense or ornate prose full of rare words scores as "human" simply because the vocabulary is rare, not because an AI didn't write it.
 
 ### Signal two — the style signal
 
 **What it measures:**
+Surface-level structural and statistical properties of the text as text (without interpreting meaning or semantics), focusing on sentence length variation/spread (burstiness), vocabulary diversity (type-token ratio), and punctuation density.
 
 **Why that might differ between human and AI writing:**
+AI-generated prose tends toward uniform pacing, even sentence lengths, and steady vocabulary distributions because it optimizes for averages across large corpora. Human writing is naturally "lumpy"—a short, punchy sentence followed by a long, multi-clause thought, along with erratic punctuation and idiosyncratic repetition.
 
 **What it can't see:**
+It cannot read or understand meaning. Because it only evaluates superficial geometry and token frequencies, cheap formatting tricks completely blind it: injecting deliberate typos, breaking sentences up with extra periods or commas, or pasting in an external quote will drastically alter the style score without altering who wrote the text or its substance.
 
 ### The combining rule
 
