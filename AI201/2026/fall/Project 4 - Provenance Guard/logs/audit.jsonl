@@ -1,2 +1,3 @@
 {"timestamp": "2026-10-27T06:09:09+00:00", "content_id": "9c32b6ee-160e-4c27-a4a3-eaf5fe66ec4d", "creator_id": "tester-alice", "guess": "unsure", "model_score": 0.1087, "style_score": 0.5, "combined_score": 0.1087, "label": "unsure", "status": "decided"}
 {"timestamp": "2026-10-27T06:14:17+00:00", "content_id": "2ac183ab-6d28-47fe-af6f-beb41a6f9343", "creator_id": "student_writer", "guess": "unsure", "model_score": 0.0059, "style_score": 0.5, "combined_score": 0.0059, "label": "unsure", "status": "decided"}
+{"timestamp": "2026-10-28T06:56:08+00:00", "content_id": "fd71ddaa-7554-47c1-8e48-5b41f15124df", "creator_id": "philosophy_prof", "guess": "unsure", "model_score": 0.1855, "style_score": 0.5834, "combined_score": 0.3646, "label": "unsure", "status": "decided"}

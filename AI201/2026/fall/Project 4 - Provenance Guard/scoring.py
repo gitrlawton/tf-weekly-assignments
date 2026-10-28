@@ -52,11 +52,23 @@ def combine_signals(model_score: float, style_score: float) -> float:
     The weights in config.py are placeholders. Change them, or ignore them and
     write a different rule.
     """
-    # TODO: replace this
-    return (
+    base_score = (
         config.WEIGHT_MODEL_SIGNAL * model_score
         + config.WEIGHT_STYLE_SIGNAL * style_score
     )
+
+    # Disagreement rule: if signals diverge by >= DISAGREEMENT_THRESHOLD,
+    # pull the score towards the uncertainty midpoint (0.50)
+    discrepancy = abs(model_score - style_score)
+    threshold = getattr(config, "DISAGREEMENT_THRESHOLD", 0.40)
+    pull = getattr(config, "DISAGREEMENT_PULL", 0.35)
+
+    if discrepancy >= threshold:
+        combined = (1.0 - pull) * base_score + pull * 0.50
+    else:
+        combined = base_score
+
+    return round(min(max(combined, 0.0), 1.0), 4)
 
 
 def score_to_label(score: float) -> tuple[str, str]:

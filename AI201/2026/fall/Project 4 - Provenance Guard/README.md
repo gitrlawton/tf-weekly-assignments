@@ -105,8 +105,15 @@ It cannot read or understand meaning. Because it only evaluates superficial geom
      signals disagree? -->
 
 **The rule:**
+Calculate a weighted combination of the language model perplexity score and the stylometric style score. If the two signals strongly diverge (difference $\ge 0.40$), the disagreement itself is treated as evidence of uncertainty: the composite score is dampened by pulling it 35% towards the neutral midpoint ($0.50$). This prevents a single signal's blind spot (e.g. predictable plain text triggering high perplexity AI detection) from unilaterally triggering a high-confidence AI accusation.
 
 **The numbers:**
+* `WEIGHT_MODEL_SIGNAL = 0.55` (55% model weight)
+* `WEIGHT_STYLE_SIGNAL = 0.45` (45% stylometry weight)
+* `DISAGREEMENT_THRESHOLD = 0.40` (minimum difference $|M - S|$ to trigger discrepancy damping)
+* `DISAGREEMENT_PULL = 0.35` (35% pull towards $0.50$ when in disagreement)
+* `HUMAN_THRESHOLD = 0.35` (score $\le 0.35 \implies$ high-confidence human)
+* `AI_THRESHOLD = 0.65` (score $\ge 0.65 \implies$ high-confidence AI)
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -114,8 +121,11 @@ It cannot read or understand meaning. Because it only evaluates superficial geom
      somewhere else, say where. -->
 
 **A case where my two signals split, and what my rule does with it:**
-
-
+Personal narrative human text (*"No way. When I finally dragged myself out of bed at four in the morning, shivering and completely bewildered, I discovered a family of raccoons having an absolute feast in my trash; they didn't even flinch when I yelled. Honestly, who can blame them?"*):
+* **Model signal (perplexity):** `0.6766` (leans AI because conversational words are familiar and predictable to GPT-2).
+* **Style signal (stylometry):** `0.0748` (strongly human because sentence lengths are extremely bursty: 2 words vs 29 words vs 5 words, paired with semicolon punctuation).
+* **The Split:** A massive divergence of **0.6018 points**.
+* **What my rule does with it:** A severe split signifies deep uncertainty. Rather than letting the model's blind spot falsely accuse the author, the combining rule weights human burstiness heavily and pulls large disagreements ($\Delta > 0.40$) away from `high-confidence AI` and safely into the `unsure` band.
 
 ---
 
