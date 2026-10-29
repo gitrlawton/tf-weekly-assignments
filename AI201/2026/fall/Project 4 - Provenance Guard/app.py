@@ -218,10 +218,9 @@ def submit():
     # Combine both signals (Milestone 4)
     combined_score = scoring.combine_signals(model_score, style_score) if text else 0.5
 
-    # Placeholders for confidence, label, and guess (Milestone 5 will turn score into label)
-    guess = "unsure"
+    # Convert combined score to label and machine guess (Milestone 5)
+    guess, label = scoring.score_to_label(combined_score)
     confidence = round(abs(combined_score - 0.5) * 2.0, 4)
-    label = "unsure"
 
     # Write submission to the audit log with BOTH signals alongside the combined score
     audit.log_decision(
@@ -272,13 +271,40 @@ def appeal():
     wrong accusation and nothing at all.
     """
     payload = request.get_json(silent=True) or {}
+    content_id = payload.get("content_id")
+    reasoning = payload.get("reasoning", "")
 
-    # TODO: delete this and build the route.
+    if not content_id:
+        return jsonify({
+            "error": "bad_request",
+            "message": "Missing content_id in appeal request.",
+        }), 400
+
+    # 1. Check the content_id actually exists
+    entries = audit.entries_for(content_id)
+    if not entries:
+        return jsonify({
+            "error": "not_found",
+            "message": f"No submission found for content_id '{content_id}'.",
+        }), 404
+
+    # Get creator_id from existing submission
+    creator_id = entries[-1].get("creator_id", "unknown")
+
+    # 2. Record the appeal in the audit log (moves status to under_review)
+    audit.log_appeal(
+        content_id=content_id,
+        creator_id=creator_id,
+        reasoning=reasoning,
+    )
+
+    # 3. Confirm to the writer
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
+        "ok": True,
+        "content_id": content_id,
+        "status": "under_review",
+        "message": "Appeal received. Your submission is now under human review.",
+    }), 200
 
 
 # ── Already works ─────────────────────────────────────────────────────────────
