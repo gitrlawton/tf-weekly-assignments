@@ -232,22 +232,6 @@ $ curl "http://127.0.0.1:5000/log?limit=2"
 }
 ```
 
----
-
-## How I Used AI
-
-**Moment 1**
-
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
-
-**Moment 2**
-
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
-
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
 ---

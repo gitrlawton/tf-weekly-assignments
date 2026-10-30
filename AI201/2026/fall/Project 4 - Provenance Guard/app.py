@@ -154,7 +154,7 @@ def health():
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
 @app.post("/submit")
-# @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
+@limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
     """
     Take a piece of text, decide about it, log the decision, answer.
@@ -202,21 +202,51 @@ def submit():
     what should this do when `text` is missing, empty, or enormous? A crash on
     a malformed input is one of the most common real failures there is.
     """
-    payload = request.get_json(silent=True) or {}
-    text = payload.get("text", "")
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        audit.log_rejection(
+            creator_id="unknown",
+            reason="malformed_json",
+        )
+        return jsonify({"error": "bad_request", "message": "Request body must be a JSON object"}), 400
+
     creator_id = payload.get("creator_id", "unknown")
+    if not isinstance(creator_id, str) or not creator_id.strip():
+        creator_id = "unknown"
+
+    text = payload.get("text")
+    if text is None:
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="missing_text",
+        )
+        return jsonify({"error": "bad_request", "message": "Field 'text' is required"}), 400
+
+    if not isinstance(text, str) or not text.strip():
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="empty_text",
+        )
+        return jsonify({"error": "bad_request", "message": "Field 'text' cannot be empty"}), 400
+
+    if len(text.split()) > 50000:
+        audit.log_rejection(
+            creator_id=creator_id,
+            reason="text_too_large",
+        )
+        return jsonify({"error": "payload_too_large", "message": "Text exceeds maximum word limit"}), 413
 
     # Generate content_id (needed by /appeal)
     content_id = str(uuid.uuid4())
 
     # Call signal one — the model signal
-    model_score = detector.model_signal(text) if text else 0.0
+    model_score = detector.model_signal(text)
 
     # Call signal two — the style signal (Milestone 4)
-    style_score = stylometry.style_signal(text) if text else 0.5
+    style_score = stylometry.style_signal(text)
 
     # Combine both signals (Milestone 4)
-    combined_score = scoring.combine_signals(model_score, style_score) if text else 0.5
+    combined_score = scoring.combine_signals(model_score, style_score)
 
     # Convert combined score to label and machine guess (Milestone 5)
     guess, label = scoring.score_to_label(combined_score)
@@ -270,7 +300,7 @@ def appeal():
     to the person on the other end. It's the only thing standing between a
     wrong accusation and nothing at all.
     """
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json(silent=True)
     content_id = payload.get("content_id")
     reasoning = payload.get("reasoning", "")
 
